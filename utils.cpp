@@ -1,7 +1,10 @@
 #include <iostream>
 
-void	ft_exit(std::string err)
+void	prog_error(std::string err)
 {
-	std::cerr << err << std::endl;
+	if (errno)
+		perror(err.c_str());
+	else
+		std::cerr << err << std::endl;
 	exit(1);
 }
