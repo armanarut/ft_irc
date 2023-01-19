@@ -5,4 +5,4 @@
 
 
 /****************[utils]****************/
-void	ft_exit(std::string err);
+void	prog_error(std::string err);
