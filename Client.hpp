@@ -5,7 +5,7 @@
 class Client
 {
 public:
-
+    int  msg();
 
 
 private:
