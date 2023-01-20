@@ -81,15 +81,16 @@ private:
         {
             int valread;
             char buffer[1024];
-            char hello[] = "Hello from server\r\n\r\n";
+            std::memset(buffer, 0, 1024);
+            char hello[] = "Hello from server\r\n";
             while ((valread = recv(it->first, buffer, 1024, 0)))
             {
-                std::memset(buffer, 0, 1024);
                 std::cout << buffer << std::endl;
+                std::memset(buffer, 0, 1024);
                 send(it->first, hello, strlen(hello), 0);
-                printf("Hello message sent\n");
+                std::cout << "Hello message sent\n";
             }
-            // delete buffer;
+            
         }
     }
 
