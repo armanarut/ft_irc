@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <cerrno>
 #include <cstring>
 #include <unistd.h>
 #include <fcntl.h>
@@ -121,21 +122,25 @@ private:
             for (iterator it = _client.begin(); it != _client.end(); ++it)
             {
                 int valread;
+                string text;
                 char buffer[BUF_SIZE];
 
                 memset(buffer, 0, 1024);
                 while ((valread = recv(it->first, buffer, BUF_SIZE, 0)))
                 {
-                    if (valread < 0)
-                        ;//////////handle here///////////
-
-                    cout << buffer << endl;
+                    // if (valread < 0)
+                        //////////handle here///////////
+                    text.append(buffer);
                     memset(buffer, 0, sizeof(buffer));
-
-                    send(it->first, HELLO_MSG, strlen(HELLO_MSG), 0);
-                    cout << "Hello message sent\n";
-                    cout << "client_size=" << _client.size() << endl;
+                cout << text << endl;
                 }
+
+                
+                send(it->first, HELLO_MSG, strlen(HELLO_MSG), 0);
+                for (iterator its = _client.begin(); its != _client.end(); ++its)
+                    send(its->first, text.c_str(), text.length(), 0);
+                cout << "client_size=" << _client.size() << endl;
+                text.clear();
             }
         }
     }
