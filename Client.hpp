@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <sys/socket.h>
 
 #include "Channel.hpp"
 
@@ -12,7 +13,7 @@ class Channel;
 class Client
 {
 public:
-	Client(const int &fd) : nick_(), user_(), passwd(false) {}
+	Client(const int &fd) : nick_(), user_(), fd_(fd), passwd(false) {}
 
 	~Client() {}
 
@@ -57,6 +58,12 @@ public:
 		}
 	}
 
+	void sendMsg(const std::string &msg)
+	{
+		std::cout << msg;
+		send(fd_, msg.c_str(), msg.length(), 0);
+	}
+
 	void setPasswd()
 	{
 		passwd = true;
@@ -71,6 +78,7 @@ private:
 	std::string												nick_;
 	std::string												user_;
 	std::vector<std::map<std::string, Channel>::pointer>	channels;
+	const int												&fd_;
 	bool													passwd;
 
 };
