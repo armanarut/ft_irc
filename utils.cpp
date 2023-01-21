@@ -1,4 +1,7 @@
 #include <iostream>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
 
 void	prog_error(std::string err)
 {
