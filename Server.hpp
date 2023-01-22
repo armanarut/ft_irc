@@ -156,7 +156,7 @@ private:
         if (new_socket == -1)
             prog_error("accept");
         cout << "adding new client: " << new_socket << endl;
-        _client.insert(make_pair(new_socket, Client()));
+        _client.insert(make_pair(new_socket, Client(server_fd)));
     }
 
     Server();
