@@ -8,12 +8,18 @@
 
 #include "Channel.hpp"
 
+#define BUF_SIZE 1024
+
 class Channel;
 
 class Client
 {
+	typedef std::map<std::string, Channel>::iterator iterator;
 public:
-	Client(const int &fd) : nick_(), user_(), fd_(fd), passwd(false) {}
+	Client(const int fd) : nick_(), user_(), fd_(fd), passwd(false)
+	{
+		(void)fd_;
+	}
 
 	~Client() {}
 
@@ -37,31 +43,42 @@ public:
 		user_ = user;
 	}
 
-	void joinChannel(std::map<std::string, Channel>::pointer channel_ptr)
-	{
-		channels.push_back(channel_ptr);
-	}
+	// void joinChannel(std::map<std::string, Channel>::pointer channel_ptr)
+	// {
+	// 	channels.push_back(channel_ptr);
+	// }
 
-	void leaveChannel(std::map<std::string, Channel>::pointer channel_ptr)
-	{
-		std::vector<std::map<std::string, Channel>::pointer>::iterator iter;
+	// void joinChannel(std::string& channel_name)
+	// {
+	// 	iterator it = channels.find(channel_name);
 
-		iter = channels.begin();
-		while(iter != channels.end())
-		{
-			if(*iter == channel_ptr)
-			{
-				channels.erase(iter, ++iter);
-				return;
-			}
-			++iter;
-		}
-	}
+	// 	if (it == channels.end())
+	// 		it = channels.insert(std::make_pair(channel_name, Channel(channel_name))).first;
+	// 	it->second.add_to_chanel(this);
+	// }
 
-	void sendMsg(const std::string &msg)
+	// void leaveChannel(std::map<std::string, Channel>::pointer channel_ptr)
+	// {
+		// std::vector<std::map<std::string, Channel>::pointer>::iterator iter;
+
+		// iter = channels.begin();
+		// while(iter != channels.end())
+		// {
+		// 	if(*iter == channel_ptr)
+		// 	{
+		// 		channels.erase(iter, ++iter);
+		// 		return;
+		// 	}
+		// 	++iter;
+		// }
+	// }
+
+
+	void	sendMsg(int socket_fd, const std::string &msg)
 	{
-		std::cout << msg;
-		send(fd_, msg.c_str(), msg.length(), 0);
+		send(socket_fd, (nick_ + ": ").c_str(), nick_.length() + 2, 0);
+		send(socket_fd, msg.c_str(), msg.length(), 0);
+		send(socket_fd,"\n\r\n\r", 4, 0);
 	}
 
 	void setPasswd()
@@ -74,11 +91,15 @@ public:
 		return (passwd);
 	}
 
+    std::string buffer;
+
 private:
 	std::string												nick_;
 	std::string												user_;
-	std::vector<std::map<std::string, Channel>::pointer>	channels;
-	const int												&fd_;
+	const int												fd_;
 	bool													passwd;
-
+/*
+NICK <имя пользователя>
+USER <имя пользователя> < > < > <реальное имя>
+*/
 };
