@@ -89,7 +89,7 @@ private:
             line.pop_back();
         std::string word = line.substr(0, line.find(" "));
         int pos = word.size() + 1;
-
+    
         if (pos)
         {
             if (word == "NICK")

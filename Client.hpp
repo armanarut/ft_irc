@@ -80,7 +80,7 @@ public:
 		send(socket_fd, msg.c_str(), msg.length(), 0);
 		send(socket_fd,"\n\r\n\r", 4, 0);
 	}
-
+	
 	void setPasswd()
 	{
 		passwd = true;

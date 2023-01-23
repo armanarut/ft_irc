@@ -14,8 +14,6 @@ public:
         (void)client;
 
 
-
-
         if (users_.size() == 1)
             admin_ = users_[0];//set admin
     };
