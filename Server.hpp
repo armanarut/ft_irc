@@ -1,30 +1,29 @@
 #pragma once
 
-#include <iostream>
 #include <string>
-#include <cerrno>
-#include <cstring>
-#include <sstream>
 #include <unistd.h>
 #include <fcntl.h>
 #include <map>
-#include "Client.hpp"
-#include "Channel.hpp"
+#include <iostream>
+// #include <cerrno>
+// #include <cstring>
+// #include <sstream>
 
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 
-#define HELLO_MSG "Hello from server\r\n\r\n"
+#include "ircserv.hpp"
+#include "Channel.hpp"
+#include "Client.hpp"
 
-using namespace std;
 
 class Server
 {
     typedef std::map<int, Client>::iterator  iterator;
 
 public:
-    Server(short port, const string& pass)
+    Server(short port, const std::string& pass)
         :_port(port),
         _pass(pass)
     {
@@ -46,7 +45,7 @@ public:
     
 private:
     short   _port;
-    string  _pass;
+    std::string  _pass;
 
     int         server_fd;
     sockaddr_in address;
@@ -81,61 +80,23 @@ private:
         fcntl(server_fd, F_SETFL, O_NONBLOCK);
     };
 
-/****************[Operators]****************/
-    void    check_operators(iterator &it)
-    {
-        std::string line = it->second.buffer;
-        if (*line.rbegin() == '\n')
-            line.pop_back();
-        std::string word = line.substr(0, line.find(" "));
-        int pos = word.size() + 1;
-    
-        if (pos)
-        {
-            if (word == "NICK")
-            {
-                word = line.substr(pos, line.find(" ", pos) - pos);
-                if (word.size())
-                {
-                    cout << "setting NICK: " << word << endl;
-                    it->second.setNick(word);
-                    _user.insert(std::make_pair(word, it->first));
-                }
-            }
-            else if (word == "PRIVMSG")
-            {
-                word = line.substr(pos, line.find(" ", pos) - pos);
-                pos += word.size() + 1;
-                if (_user.find(word) != _user.end())
-                    it->second.sendMsg(_user[word], line.substr(pos, line.size()));
-                else
-                    cout << "can't find: " << word << endl;
-            }
-            else
-                send(it->first, "command not found:\n\r\n\r", strlen("command not found:\n\r\n\r"), 0);
-        }
-    }
-
 /****************[make select]****************/
     void    start()
     {
-        char buffer[BUF_SIZE];
-        int r, nfds = server_fd;
-        fd_set rd, wr, er;
-        FD_ZERO(&rd);
-        FD_ZERO(&wr);
-        FD_ZERO(&er);
+        int     r, nfds = server_fd;
+        fd_set  rd, wr, er;
         timeval tv;
+
         tv.tv_sec = 0;
         tv.tv_usec = 300000;
-
+        (FD_ZERO(&rd), FD_ZERO(&wr), FD_ZERO(&er));
         for(;;)
         {
             if (_client.size())
             {
                 for (iterator it = _client.begin(); it != _client.end(); ++it)
                     FD_SET(it->first, &rd);
-                nfds = max(nfds, _client.rbegin()->first);///////////set max fd
+                nfds = std::max(nfds, _client.rbegin()->first);
             }
 
             r = select(nfds + 1, &rd, &wr, &er, &tv);
@@ -148,32 +109,21 @@ private:
                 // cout << "continue..." << endl;
                 for (iterator it = _client.begin(); it != _client.end(); ++it)
                 {
-                    int valread = 0;
-                    /****************[writing]****************/
+                    /*************[writing]*************/
                     if (FD_ISSET(it->first, &wr))
                     {
                         // cout << "writing..." << endl;
+                        FD_CLR(it->first, &wr);
                         check_operators(it);
                         it->second.buffer.clear();
-                        FD_CLR(it->first, &wr);
                     }
-                    /****************[reading]****************/
+                    /*************[reading]*************/
                     if (FD_ISSET(it->first, &rd))
                     {
                         // cout << "reading client: " << it->first << endl;
                         FD_CLR(it->first, &rd);
-                        memset(buffer, 0, 1024);
-                        while ((valread = recv(it->first, buffer, BUF_SIZE, 0)) != -1)
-                        {
-                            if (valread == 0)
-                            {
-                                cout << "Offline client: " << it->first << endl;
-                                close(it->first);
-                                _client.erase(it->first);
-                                break ;
-                            }
-                            it->second.buffer.append(buffer);
-                        }
+                        if (!get_buffer(it))
+                            break ;
                         FD_SET(it->first, &wr);
                     }
                 }
@@ -184,6 +134,28 @@ private:
                 new_client();
             }
         }
+    }
+
+    bool    get_buffer(iterator& it)
+    {
+        char    buffer[BUF_SIZE];
+        int     valread;
+
+        while ((memset(buffer, 0, 1024), \
+                valread = recv(it->first, buffer, BUF_SIZE, 0)) != -1)
+        {
+            if (valread == 0)
+            {
+                close(it->first);
+                _user.erase(it->second.getNick());
+                _client.erase(it->first);
+                std::cout << "Offline user: " << it->first << std::endl;
+                std::cout << "Users online: " << _client.size() << std::endl;
+                return valread;
+            }
+            it->second.buffer.append(buffer);
+        }
+        return valread;
     }
 
 /****************[create new client]****************/
@@ -197,8 +169,153 @@ private:
         if (new_socket == -1)
             return ;
         fcntl(new_socket, F_SETFL, O_NONBLOCK);
-        cout << "Online client: " << new_socket << endl;
-        _client.insert(make_pair(new_socket, Client(new_socket)));
+        _client.insert(std::make_pair(new_socket, Client(new_socket)));
+        std::cout << "Online user: " << new_socket << std::endl;
+        std::cout << "Users online: " << _client.size() << std::endl;
+    }
+
+/****************[Operators]****************/
+    void    check_operators(iterator &it)
+    {
+        std::string line = it->second.buffer;
+        std::string word;
+        if (*line.rbegin() == '\n')
+            line.pop_back();
+        if (line.rfind(" ") == std::string::npos)
+            word = line;
+        else
+            word = line.substr(0, line.find(" "));
+    
+        if (word.size())
+        {
+            if (word == "NICK")
+                operator_NICK(it, line.substr(word.size() + 1, line.size()));
+            else if (word == "PRIVMSG")
+                operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()));
+            else if (word == "JOIN")
+                operator_JOIN(it, line.substr(word.size() + 1, line.size()));
+            else if (word == "PART")
+                operator_PART(it, line.substr(word.size() + 1, line.size()));
+            else
+            {
+                SEND_ERR(it->first, word, ERR_UNKNOWNCOMMAND);
+            }
+        }
+    }
+
+    void    operator_PART(iterator &it, const std::string& line)
+    {
+        std::string word;
+
+        word = line.substr(0, line.find(" "));
+        if (!word.size())
+        {
+            SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        }
+        else if (_channel.find(word) == _channel.end())
+        {
+            SEND_ERR(it->first, word, ERR_NOSUCHCHANNEL);
+        }
+        else if (!_channel[word].isAvelabel(&it->second))
+        {
+            SEND_ERR(it->first, word, ERR_NOTONCHANNEL);
+        }
+        else
+        {
+            _channel[word].leave_chanel(&it->second);
+            SEND_CHANEL(it->first, word, LEAVE_CHANNEL);
+        }
+    }
+
+    void    operator_JOIN(iterator &it, const std::string& line)
+    {
+        std::string word;
+
+        word = line.substr(0, line.find(" "));
+        if (!word.size())
+        {
+            SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        }
+        else if (word[0] != '#')
+        {
+            SEND_ERR(it->first, word, ERR_BADCHANMASK);
+        }
+        else
+        {
+            if (_channel.find(word) == _channel.end())
+                _channel.insert(std::make_pair(word, Channel(word)));
+            _channel[word].add_user(&it->second);
+            SEND_CHANEL(it->first, word, JOIN_CHANNEL);
+        }
+    }
+
+    void    operator_PRIVMSG(iterator &it, const std::string& line)
+    {
+        std::string word;
+        std::string text;
+
+        word = line.substr(0, line.find(" "));
+        if (!word.size() || line.rfind(" ") == std::string::npos)
+        {
+            SEND_MSG(it->first, ERR_NOTEXTTOSEND);
+        }
+        else
+        {
+            text = line.substr(word.size() + 1, line.size());
+            if (!text.size())
+            {
+                SEND_MSG(it->first, ERR_NOTEXTTOSEND);
+            }
+            else if (word[0] == '#')
+            {
+                if (_channel.find(word) == _channel.end())
+                {
+                    SEND_ERR(it->first, word, ERR_NOSUCHNICK);
+                }
+                else if (!_channel[word].isAvelabel(&it->second))
+                {
+                    SEND_ERR(it->first, word, ERR_CANNOTSENDTOCHAN);
+                }
+                else
+                    _channel[word].sendMsg(&it->second, text);
+            }
+            else
+            {
+                if (_user.find(word) == _user.end())
+                {
+                    SEND_ERR(it->first, word, ERR_NOSUCHNICK);
+                }
+                else
+                    it->second.sendMsg(_user[word], text);
+            }
+        }
+    }
+
+    void    operator_NICK(iterator &it, const std::string& line)
+    {
+        std::string word;
+
+        word = line.substr(0, line.find(" "));
+
+        if (!word.size())
+        {
+            SEND_MSG(it->first, ERR_NONICKNAMEGIVEN);
+        }
+        else if (!is_all_alpha(word))
+        {
+            SEND_ERR(it->first, word, ERR_ERRONEUSNICKNAME);
+        }
+        else if (_user.find(word) != _user.end() && _user[word] != it->first)
+        {
+            SEND_ERR(it->first, word, ERR_NICKNAMEINUSE);
+        }
+        else
+        {
+            _user.erase(word);
+            std::cout << "setting NICK: " << word << std::endl;
+            it->second.setNick(word);
+            _user.insert(std::make_pair(word, it->first));
+        }
     }
 
     Server();
