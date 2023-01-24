@@ -1,12 +1,8 @@
 #pragma once
 
-#include <iostream>
 #include <string>
-#include <vector>
-#include <map>
 #include <sys/socket.h>
 
-#include "Channel.hpp"
 
 #define BUF_SIZE 1024
 
@@ -28,7 +24,7 @@ public:
 		return (nick_);
 	}
 
-	void setNick(std::string nick)
+	void	setNick(std::string nick)
 	{
 		nick_ = nick;
 	}
@@ -38,68 +34,40 @@ public:
 		return (user_);
 	}
 
-	void setUser(std::string user)
+	void	setUser(std::string user)
 	{
 		user_ = user;
 	}
 
-	// void joinChannel(std::map<std::string, Channel>::pointer channel_ptr)
-	// {
-	// 	channels.push_back(channel_ptr);
-	// }
-
-	// void joinChannel(std::string& channel_name)
-	// {
-	// 	iterator it = channels.find(channel_name);
-
-	// 	if (it == channels.end())
-	// 		it = channels.insert(std::make_pair(channel_name, Channel(channel_name))).first;
-	// 	it->second.add_to_chanel(this);
-	// }
-
-	// void leaveChannel(std::map<std::string, Channel>::pointer channel_ptr)
-	// {
-		// std::vector<std::map<std::string, Channel>::pointer>::iterator iter;
-
-		// iter = channels.begin();
-		// while(iter != channels.end())
-		// {
-		// 	if(*iter == channel_ptr)
-		// 	{
-		// 		channels.erase(iter, ++iter);
-		// 		return;
-		// 	}
-		// 	++iter;
-		// }
-	// }
-
-
-	void	sendMsg(int socket_fd, const std::string &msg)
+	int		getFd()
 	{
-		send(socket_fd, (nick_ + ": ").c_str(), nick_.length() + 2, 0);
-		send(socket_fd, msg.c_str(), msg.length(), 0);
-		send(socket_fd,"\n\r\n\r", 4, 0);
+		return (fd_);
 	}
-	
-	void setPasswd()
+
+	void	setPasswd()
 	{
 		passwd = true;
 	}
 
-	bool hasPasswd()
+	bool	hasPasswd()
 	{
 		return (passwd);
 	}
 
-    std::string buffer;
+	void	sendMsg(int socket_fd, const std::string &msg, const std::string &channel = std::string())
+	{
+		if (channel.size())
+			send(socket_fd, (channel + ": ").c_str(), channel.length() + 2, 0);
+		send(socket_fd, (nick_ + ": ").c_str(), nick_.length() + 2, 0);
+		send(socket_fd, msg.c_str(), msg.length(), 0);
+		send(socket_fd,"\r\n\r\n", 4, 0);
+	}
+
+    std::string		buffer;
 
 private:
-	std::string												nick_;
-	std::string												user_;
-	const int												fd_;
-	bool													passwd;
-/*
-NICK <имя пользователя>
-USER <имя пользователя> < > < > <реальное имя>
-*/
+	std::string		nick_;
+	std::string		user_;
+	const int		fd_;
+	bool			passwd;
 };

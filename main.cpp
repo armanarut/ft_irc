@@ -1,4 +1,3 @@
-#include "ircserv.hpp"
 #include "Server.hpp"
 #include <cstdlib>
 
