@@ -12,31 +12,43 @@ class Client
 {
 	typedef std::map<std::string, Channel>::iterator iterator;
 public:
-	Client(const int fd) : nick_(), user_(), fd_(fd), passwd(false)
-	{
-		(void)fd_;
-	}
+
+	Client(int fd)
+		:nickname(),
+		username(),
+		hostname(),
+		realname(),
+		passwd(false),
+		fd_(fd) {}
 
 	~Client() {}
 
+	void	init(const std::string& user, const std::string& host, const std::string& real)
+	{
+        std::cout << "operator_USER: username=" << user << " hostname=" << host << " realname=" << real << std::endl;
+		username = user;
+		hostname = host;
+		realname = real;
+	}
+
 	std::string getNick()
 	{
-		return (nick_);
+		return (nickname);
 	}
 
 	void	setNick(std::string nick)
 	{
-		nick_ = nick;
+		nickname = nick;
 	}
 
 	std::string getUser()
 	{
-		return (user_);
+		return (username);
 	}
 
 	void	setUser(std::string user)
 	{
-		user_ = user;
+		username = user;
 	}
 
 	int		getFd()
@@ -54,20 +66,21 @@ public:
 		return (passwd);
 	}
 
-	void	sendMsg(int socket_fd, const std::string &msg, const std::string &channel = std::string())
+	void	sendMsg(int socket_fd, const std::string &msg, const std::string &nick_or_channel)
 	{
-		if (channel.size())
-			send(socket_fd, (channel + ": ").c_str(), channel.length() + 2, 0);
-		send(socket_fd, (nick_ + ": ").c_str(), nick_.length() + 2, 0);
+		send(socket_fd, (":" + nickname + " PRIVMSG ").c_str(), nickname.length() + 10, 0);
+			send(socket_fd, (nick_or_channel + " :").c_str(), nick_or_channel.length() + 2, 0);
 		send(socket_fd, msg.c_str(), msg.length(), 0);
-		send(socket_fd,"\r\n\r\n", 4, 0);
+		send(socket_fd,"\r\n", 2, 0);
 	}
 
     std::string		buffer;
 
 private:
-	std::string		nick_;
-	std::string		user_;
-	const int		fd_;
+	std::string		nickname;
+	std::string		username;
+	std::string		hostname;
+	std::string		realname;
 	bool			passwd;
+	int				fd_;
 };

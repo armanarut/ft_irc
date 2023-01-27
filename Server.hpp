@@ -100,9 +100,9 @@ private:
             }
 
             r = select(nfds + 1, &rd, &wr, &er, &tv);
-            if (r == -1 && errno == EINTR)
-                break;//continue;
-            else if (r == -1)
+            // if (r == -1 && errno == EINTR)
+            //     break;//continue;
+            if (r == -1)
                 prog_error("select");
             else if (r)
             {
@@ -118,7 +118,7 @@ private:
                         it->second.buffer.clear();
                     }
                     /*************[reading]*************/
-                    if (FD_ISSET(it->first, &rd))
+                    else if (FD_ISSET(it->first, &rd))
                     {
                         // cout << "reading client: " << it->first << endl;
                         FD_CLR(it->first, &rd);
@@ -170,17 +170,21 @@ private:
             return ;
         fcntl(new_socket, F_SETFL, O_NONBLOCK);
         _client.insert(std::make_pair(new_socket, Client(new_socket)));
-        std::cout << "Online user: " << new_socket << std::endl;
+        std::cout << "New user: " << new_socket << std::endl;
         std::cout << "Users online: " << _client.size() << std::endl;
     }
 
 /****************[Operators]****************/
     void    check_operators(iterator &it)
     {
-        std::string line = it->second.buffer;
+        std::string line;
+        if (it->second.buffer.find("\r\n") != std::string::npos)
+            line = it->second.buffer.substr(0, it->second.buffer.find("\r\n"));
+        else
+            line = it->second.buffer.substr(0, it->second.buffer.find("\n"));
+        it->second.buffer.erase(0, line.size() + 2);
+        std::cout << "Incoming command: " << line << std::endl;
         std::string word;
-        if (*line.rbegin() == '\n')
-            line.pop_back();
         if (line.rfind(" ") == std::string::npos)
             word = line;
         else
@@ -188,7 +192,9 @@ private:
     
         if (word.size())
         {
-            if (word == "NICK")
+            if (word == "USER")
+                operator_USER(it, line.substr(word.size() + 1, line.size()));
+            else if (word == "NICK")
                 operator_NICK(it, line.substr(word.size() + 1, line.size()));
             else if (word == "PRIVMSG")
                 operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()));
@@ -196,11 +202,42 @@ private:
                 operator_JOIN(it, line.substr(word.size() + 1, line.size()));
             else if (word == "PART")
                 operator_PART(it, line.substr(word.size() + 1, line.size()));
+            else if (word == "LUSERS")
+                operator_LUSERS(it);
             else
             {
+                std::cout  << line << ERR_UNKNOWNCOMMAND << std::endl;
                 SEND_ERR(it->first, word, ERR_UNKNOWNCOMMAND);
             }
         }
+        if (it->second.buffer.size())
+            check_operators(it);
+    }
+
+    void    operator_LUSERS(iterator &it)
+    {
+        std::string msg = (it->second.getNick() + " " + std::to_string(_user.size()));
+        SEND_ERR(it->first, msg, RPL_LUSEROP);
+    }
+
+    void    operator_USER(iterator &it, const std::string& line)
+    {
+        int pos = 0;
+        std::string word;
+        std::string user;
+        std::string host;
+
+        user = line.substr(pos, line.find(" ", pos) - pos);
+        pos += user.size() + 1;
+        word = line.substr(pos, line.find(" ", pos) - pos);
+        pos += word.size() + 1;
+        word = line.substr(pos, line.find(" ", pos) - pos);
+        if (word[0] != ':')
+        {
+            pos += word.size() + 1;
+            host = word;
+        }
+        it->second.init(user, host, line.substr(pos + 1, line.size()));
     }
 
     void    operator_PART(iterator &it, const std::string& line)
@@ -286,7 +323,7 @@ private:
                     SEND_ERR(it->first, word, ERR_NOSUCHNICK);
                 }
                 else
-                    it->second.sendMsg(_user[word], text);
+                    it->second.sendMsg(_user[word], text, word);
             }
         }
     }

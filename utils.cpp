@@ -13,10 +13,11 @@ void	prog_error(std::string err)
 	exit(1);
 }
 
-bool	is_all_alpha(std::string& str)
+bool	is_all_alpha(std::string str)
 {
-	for(std::string::iterator ch = str.begin(); ch != str.end(); ++ch)
+	for (std::string::iterator ch = str.begin(); ch != str.end(); ++ch)
 		if (!std::isalpha(*ch))
-			return false;
+			std::cout << "char:" << (int)*ch << std::endl;
+			// return false;
 	return true;
 }
