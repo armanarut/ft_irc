@@ -13,23 +13,25 @@
 #define ERR_NOSUCHCHANNEL       " :No such channel"
 #define ERR_NOTONCHANNEL        " :You're not on that channel"
 
+#define RPL_LUSEROP             " :operator(s) online"
+
 #define JOIN_CHANNEL    "You joined to channel: "
 #define LEAVE_CHANNEL    "You leave the channel: "
 
 #define SEND_CHANEL(fd, word, msg)  \
     send(fd, msg, strlen(msg), 0); \
     send(fd, word.c_str(), word.length(), 0); \
-    send(fd,"\r\n\r\n", 4, 0)
+    send(fd,"\r\n", 2, 0)
 
 #define SEND_MSG(fd, msg)  \
     send(fd, msg, strlen(msg), 0); \
-    send(fd,"\r\n\r\n", 4, 0)
+    send(fd,"\r\n", 2, 0)
 
 #define SEND_ERR(fd, word, msg)  \
     send(fd, word.c_str(), word.length(), 0); \
     send(fd, msg, strlen(msg), 0); \
-    send(fd,"\r\n\r\n", 4, 0)
+    send(fd,"\r\n", 2, 0)
 
 /****************[utils]****************/
 void	prog_error(std::string err);
-bool	is_all_alpha(std::string& str);
+bool	is_all_alpha(std::string str);
