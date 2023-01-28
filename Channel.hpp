@@ -57,6 +57,14 @@ public:
         return admin_ == client;
     }
 
+	Client* search_user_of_channel(std::string username)
+	{        
+		for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
+			if ((*it)->getUser() == username)
+				return (*it);
+		return (NULL);
+	}
+
 private:
     std::string             name_;
     std::vector<Client*>    users_;

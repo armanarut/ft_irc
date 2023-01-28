@@ -202,6 +202,8 @@ private:
                 operator_JOIN(it, line.substr(word.size() + 1, line.size()));
             else if (word == "PART")
                 operator_PART(it, line.substr(word.size() + 1, line.size()));
+			else if (word == "KICK")
+				operator_KICK(it, line.substr(word.size() + 1, line.size()));
             else if (word == "LUSERS")
                 operator_LUSERS(it);
             else
@@ -213,6 +215,42 @@ private:
         if (it->second.buffer.size())
             check_operators(it);
     }
+
+	void	operator_KICK(iterator &it, const std::string& line)
+	{
+		std::string channel_name, user_name, msg_text;
+
+        int pos = 0;
+
+        channel_name = line.substr(pos, line.find(" ", pos) - pos);
+        pos += channel_name.size() + 1;
+        user_name = line.substr(pos, line.find(" ", pos) - pos);
+        pos += user_name.size(); // + 1;
+        msg_text = line.substr(pos, line.size());
+
+		if (!channel_name.size() || !user_name.size())
+		{
+			SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+		}
+		else if (_channel.find(channel_name) == _channel.end())
+		{
+			SEND_ERR(it->first, channel_name, ERR_NOSUCHCHANNEL);
+		}
+		else
+		{
+			if (!(_channel[channel_name].isAdmin(&it->second)))
+			{
+				SEND_MSG(it->first, "DU ADMIN CHES");
+				return;
+			}
+			Client*  search_out = _channel[channel_name].search_user_of_channel(user_name);
+			if (search_out)
+			{
+//				SEND_MSG(search_out, "mesig text");
+				_channel[channel_name].leave_chanel(search_out);
+			}
+		}
+	}
 
     void    operator_LUSERS(iterator &it)
     {
