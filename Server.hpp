@@ -17,7 +17,6 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 
-
 class Server
 {
     typedef std::map<int, Client>::iterator  iterator;
@@ -179,25 +178,42 @@ private:
     {
         std::string line;
         if (it->second.buffer.find("\r\n") != std::string::npos)
+        {
             line = it->second.buffer.substr(0, it->second.buffer.find("\r\n"));
+            it->second.buffer.erase(0, line.size() + 2);
+        }
         else
+        {
             line = it->second.buffer.substr(0, it->second.buffer.find("\n"));
-        it->second.buffer.erase(0, line.size() + 2);
+            it->second.buffer.erase(0, line.size() + 1);
+        }
         std::cout << "Incoming command: " << line << std::endl;
         std::string word;
         if (line.rfind(" ") == std::string::npos)
             word = line;
         else
             word = line.substr(0, line.find(" "));
-    
+
         if (word.size())
         {
-            if (word == "USER")
+            if (line.size() == word.size())
+            {
+                SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+            }
+            else if (word == "CAP")
+                ;// operator_CAP(it, line.substr(word.size() + 1, line.size()));
+            else if (word == "PING")
+                ;// operator_PING(it, line.substr(word.size() + 1, line.size()));
+            else if (word == "PONG")
+                ;// operator_PONG(it, line.substr(word.size() + 1, line.size()));
+            else if (word == "USER")
                 operator_USER(it, line.substr(word.size() + 1, line.size()));
             else if (word == "NICK")
                 operator_NICK(it, line.substr(word.size() + 1, line.size()));
+            else if (word == "NOTICE")
+                operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()), "NOTICE");
             else if (word == "PRIVMSG")
-                operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()));
+                operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()), "PRIVMSG");
             else if (word == "JOIN")
                 operator_JOIN(it, line.substr(word.size() + 1, line.size()));
             else if (word == "PART")
@@ -243,12 +259,20 @@ private:
 				SEND_MSG(it->first, "DU ADMIN CHES");
 				return;
 			}
-			Client*  search_out = _channel[channel_name].search_user_of_channel(user_name);
-			if (search_out)
+		    else if (_user.find(user_name) == _user.end())
 			{
-//				SEND_MSG(search_out, "mesig text");
-				_channel[channel_name].leave_chanel(search_out);
+				SEND_MSG(it->first, "NO USER");
+				return;
 			}
+			else if (!_channel[channel_name].search_user(&_client.at(_user[user_name])))
+			{
+				SEND_MSG(it->first, "NO USER IN CHANEL");
+			}
+            else
+            {
+				SEND_STRING(_user[user_name], msg_text);
+				_channel[channel_name].leave_chanel(&_client.at(_user[user_name]));
+            }
 		}
 	}
 
@@ -256,6 +280,50 @@ private:
     {
         std::string msg = (it->second.getNick() + " " + std::to_string(_user.size()));
         SEND_ERR(it->first, msg, RPL_LUSEROP);
+    }
+
+    // void    operator_CAP(iterator &it, const std::string& line)
+    // {
+    //     std::string sub;
+
+    //     sub = line.substr(0, line.find(" "));
+    //     if (sub == "LS")
+    //     {
+    //         ;// send(it->first, "002 [admin]\r\n", 11, 0);
+    //         // SEND_CLIENT(it->first, "SERVER", "CAP", "*", "multi-prefix sasl");
+    //     }
+    // }
+
+    void    operator_PING(iterator &it, const std::string& line)
+    {
+        std::string text;
+
+        text = line.substr(0, line.find(" "));
+        if (text[0] != ':')
+        {
+            SEND_MSG(it->first, ERR_NOTEXTTOSEND);
+            return ;
+        }
+        else
+        {
+            SEND_CLIENT(it->first, "SERVER", "PING", " ", line.substr(1, text.size()).c_str());
+        }
+    }
+
+    void    operator_PONG(iterator &it, const std::string& line)
+    {
+        std::string text;
+
+        text = line.substr(0, line.find(" "));
+        if (text[0] != ':')
+        {
+            SEND_MSG(it->first, ERR_NOTEXTTOSEND);
+            return ;
+        }
+        else
+        {
+            SEND_CLIENT(it->first, "SERVER", "PONG", " ", line.substr(1, text.size()).c_str());
+        }
     }
 
     void    operator_USER(iterator &it, const std::string& line)
@@ -324,7 +392,7 @@ private:
         }
     }
 
-    void    operator_PRIVMSG(iterator &it, const std::string& line)
+    void    operator_PRIVMSG(iterator &it, const std::string& line, std::string command)
     {
         std::string word;
         std::string text;
@@ -332,37 +400,43 @@ private:
         word = line.substr(0, line.find(" "));
         if (!word.size() || line.rfind(" ") == std::string::npos)
         {
+            SEND_MSG(it->first, ERR_NORECIPIENT);
+            return ;
+        }
+        text = line.substr(word.size() + 1, line.size());
+        if (!text.size())
+        {
             SEND_MSG(it->first, ERR_NOTEXTTOSEND);
+            return ;
+        }
+        if (text[0] != ':')
+        {
+            SEND_MSG(it->first, ERR_NOTEXTTOSEND);
+            return ;
+        }
+        else
+            text.erase(text.begin());
+        if (word[0] == '#')
+        {
+            if (_channel.find(word) == _channel.end())
+            {
+                SEND_ERR(it->first, word, ERR_NOSUCHNICK);
+            }
+            else if (!_channel[word].isAvelabel(&it->second))
+            {
+                SEND_ERR(it->first, word, ERR_CANNOTSENDTOCHAN);
+            }
+            else
+                _channel[word].sendMsg(&it->second, text, command);
         }
         else
         {
-            text = line.substr(word.size() + 1, line.size());
-            if (!text.size())
+            if (_user.find(word) == _user.end())
             {
-                SEND_MSG(it->first, ERR_NOTEXTTOSEND);
-            }
-            else if (word[0] == '#')
-            {
-                if (_channel.find(word) == _channel.end())
-                {
-                    SEND_ERR(it->first, word, ERR_NOSUCHNICK);
-                }
-                else if (!_channel[word].isAvelabel(&it->second))
-                {
-                    SEND_ERR(it->first, word, ERR_CANNOTSENDTOCHAN);
-                }
-                else
-                    _channel[word].sendMsg(&it->second, text);
+                SEND_ERR(it->first, word, ERR_NOSUCHNICK);
             }
             else
-            {
-                if (_user.find(word) == _user.end())
-                {
-                    SEND_ERR(it->first, word, ERR_NOSUCHNICK);
-                }
-                else
-                    it->second.sendMsg(_user[word], text, word);
-            }
+                it->second.sendMsg(_user[word], text, word, "PRIVMSG");
         }
     }
 
@@ -371,7 +445,6 @@ private:
         std::string word;
 
         word = line.substr(0, line.find(" "));
-
         if (!word.size())
         {
             SEND_MSG(it->first, ERR_NONICKNAMEGIVEN);

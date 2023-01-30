@@ -35,11 +35,11 @@ public:
             admin_ = users_[0];
     }
 
-	void	sendMsg(Client* client, const std::string& msg)
+	void	sendMsg(Client* client, const std::string& msg, const std::string& command)
 	{
         for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
             if (*it != client)
-                client->sendMsg((*it)->getFd(), msg, name_);
+                client->sendMsg((*it)->getFd(), msg, name_, command);
 	}
 
     bool    isAvelabel(Client* client)
@@ -57,12 +57,12 @@ public:
         return admin_ == client;
     }
 
-	Client* search_user_of_channel(std::string username)
+	bool search_user(Client* client)
 	{        
 		for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
-			if ((*it)->getUser() == username)
-				return (*it);
-		return (NULL);
+			if (*it == client)
+				return true;
+		return true;
 	}
 
 private:
