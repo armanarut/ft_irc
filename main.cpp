@@ -6,9 +6,10 @@ int main(int argc, char *argv[])
     if (argc != 3)
         prog_error("invalid count of arguments <port> <password>");
     /****************///check valid port
-    Server server(std::atoi(argv[1]), argv[2]);
-
-
+    int port = std::atoi(argv[1]);
+    if (!is_all_digit(argv[1]) || port < 1 || port > 65535)
+        prog_error("Port must to by digital, and in range [1 to 65535]");
+    Server server(port, argv[2]);
 
     return 0;
 }

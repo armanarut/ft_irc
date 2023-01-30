@@ -17,7 +17,14 @@ bool	is_all_alpha(std::string str)
 {
 	for (std::string::iterator ch = str.begin(); ch != str.end(); ++ch)
 		if (!std::isalpha(*ch))
-			std::cout << "char:" << (int)*ch << std::endl;
-			// return false;
+			return false;
+	return true;
+}
+
+bool	is_all_digit(std::string str)
+{
+	for (std::string::iterator ch = str.begin(); ch != str.end(); ++ch)
+		if (!std::isdigit(*ch))
+			return false;
 	return true;
 }

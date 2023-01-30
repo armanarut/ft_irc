@@ -27,11 +27,25 @@
     send(fd, msg, strlen(msg), 0); \
     send(fd,"\r\n", 2, 0)
 
+#define SEND_STRING(fd, str)  \
+    send(fd, str.c_str(), str.length(), 0); \
+    send(fd,"\r\n", 2, 0)
+
 #define SEND_ERR(fd, word, msg)  \
     send(fd, word.c_str(), word.length(), 0); \
     send(fd, msg, strlen(msg), 0); \
     send(fd,"\r\n", 2, 0)
 
+#define SEND_CLIENT(fd, nickname, command, nick_or_channel, msg)  \
+    const std::string _nickname(nickname);                                    \
+    const std::string _command(command);                                    \
+    const std::string _nick_or_channel(nick_or_channel);                     \
+    const std::string _msg(msg);                                              \
+    send(fd, (":" + _nickname + " " + _command + " ").c_str(), _nickname.length() + _command.length() + 3, 0);    \
+    send(fd, (_nick_or_channel + " :").c_str(), _nick_or_channel.length() + 2, 0);    \
+    send(fd, _msg.c_str(), _msg.length(), 0); \
+    send(fd,"\r\n", 2, 0)
 /****************[utils]****************/
 void	prog_error(std::string err);
 bool	is_all_alpha(std::string str);
+bool	is_all_digit(std::string str);

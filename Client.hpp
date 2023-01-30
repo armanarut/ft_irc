@@ -66,12 +66,13 @@ public:
 		return (passwd);
 	}
 
-	void	sendMsg(int socket_fd, const std::string &msg, const std::string &nick_or_channel)
+	void	sendMsg(int socket_fd, const std::string &msg, const std::string &nick_or_channel, const std::string &command)
 	{
-		send(socket_fd, (":" + nickname + " PRIVMSG ").c_str(), nickname.length() + 10, 0);
-			send(socket_fd, (nick_or_channel + " :").c_str(), nick_or_channel.length() + 2, 0);
-		send(socket_fd, msg.c_str(), msg.length(), 0);
-		send(socket_fd,"\r\n", 2, 0);
+		SEND_CLIENT(socket_fd, nickname, command, nick_or_channel.c_str(), msg.c_str());
+		// send(socket_fd, (":" + nickname + " PRIVMSG ").c_str(), nickname.length() + 10, 0);
+		// 	send(socket_fd, (nick_or_channel + " :").c_str(), nick_or_channel.length() + 2, 0);
+		// send(socket_fd, msg.c_str(), msg.length(), 0);
+		// send(socket_fd,"\r\n", 2, 0);
 	}
 
     std::string		buffer;
