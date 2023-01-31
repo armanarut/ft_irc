@@ -261,12 +261,12 @@ private:
 			}
 		    else if (_user.find(user_name) == _user.end())
 			{
-				SEND_MSG(it->first, "NO USER");
+				SEND_MSG(it->first, ERR_NOSUCHNICK);
 				return;
 			}
 			else if (!_channel[channel_name].search_user(&_client.at(_user[user_name])))
 			{
-				SEND_MSG(it->first, "NO USER IN CHANEL");
+				SEND_MSG(it->first, ERR_USERNOTINCHANNEL);
 			}
             else
             {
