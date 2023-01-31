@@ -1,10 +1,10 @@
 #pragma once
 
-#define ERR_NONICKNAMEGIVEN     ":No nickname given"
+#define ERR_NONICKNAMEGIVEN     " :No nickname given"
 #define ERR_ERRONEUSNICKNAME    " :Erroneous nickname"
 #define ERR_NICKNAMEINUSE       " :Nickname is already in use"
-#define ERR_NORECIPIENT         ":No recipient given"
-#define ERR_NOTEXTTOSEND        ":No text to send"
+#define ERR_NORECIPIENT         " :No recipient given"
+#define ERR_NOTEXTTOSEND        " :No text to send"
 #define ERR_CANNOTSENDTOCHAN    " :Cannot send to channel"
 #define ERR_NOSUCHNICK          " :No such nick/channel"
 #define ERR_UNKNOWNCOMMAND      " :Unknown command"
@@ -12,6 +12,7 @@
 #define ERR_BADCHANMASK         " :Bad Channel Mask"
 #define ERR_NOSUCHCHANNEL       " :No such channel"
 #define ERR_NOTONCHANNEL        " :You're not on that channel"
+#define ERR_CHANOPRIVSNEEDED	" :You're not channel operator"
 
 #define RPL_LUSEROP             " :operator(s) online"
 

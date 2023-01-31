@@ -256,7 +256,7 @@ private:
 		{
 			if (!(_channel[channel_name].isAdmin(&it->second)))
 			{
-				SEND_MSG(it->first, "DU ADMIN CHES");
+				SEND_MSG(it->first, ERR_CHANOPRIVSNEEDED);
 				return;
 			}
 		    else if (_user.find(user_name) == _user.end())
