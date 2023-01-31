@@ -13,6 +13,7 @@
 #define ERR_NOSUCHCHANNEL       " :No such channel"
 #define ERR_NOTONCHANNEL        " :You're not on that channel"
 #define ERR_CHANOPRIVSNEEDED	" :You're not channel operator"
+#define ERR_USERNOTINCHANNEL	" :They aren't on that channel"
 
 #define RPL_LUSEROP             " :operator(s) online"
 
