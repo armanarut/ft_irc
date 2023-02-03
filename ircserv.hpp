@@ -14,11 +14,20 @@
 #define ERR_NOTONCHANNEL        " :You're not on that channel"
 #define ERR_CHANOPRIVSNEEDED	" :You're not channel operator"
 #define ERR_USERNOTINCHANNEL	" :They aren't on that channel"
-
+#define ERR_PASSWDMISMATCH	    " :Password incorrect"
+#define ERR_ALREADYREGISTERED   " :You may not reregister"
+ 
 #define RPL_LUSEROP             " :operator(s) online"
 
+#define NOT_REGISTERED   "You are not registered"
+#define SINTAX_ERROR   " :Sintax error"
 #define JOIN_CHANNEL    "You joined to channel: "
 #define LEAVE_CHANNEL    "You leave the channel: "
+
+// bool    CHECK_PARAM(std::string first, std::string second)
+// {
+//     return (first.size() == second.size());
+// }
 
 #define SEND_CHANEL(fd, word, msg)  \
     send(fd, msg, strlen(msg), 0); \

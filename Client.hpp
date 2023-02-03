@@ -1,7 +1,9 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 #include <sys/socket.h>
+#include "ircserv.hpp"
 
 
 #define BUF_SIZE 1024
@@ -18,6 +20,7 @@ public:
 		username(),
 		hostname(),
 		realname(),
+		registered(false),
 		passwd(false),
 		fd_(fd) {}
 
@@ -56,9 +59,20 @@ public:
 		return (fd_);
 	}
 
-	void	setPasswd()
+	void	registering()
+	{
+		if (passwd && !username.empty() && !realname.empty() && !nickname.empty())
+			registered = true;
+	}
+
+	void	unlockPasswd()
 	{
 		passwd = true;
+	}
+
+	bool	isRegistered()
+	{
+		return (registered);
 	}
 
 	bool	hasPasswd()
@@ -82,6 +96,7 @@ private:
 	std::string		username;
 	std::string		hostname;
 	std::string		realname;
+	bool			registered;
 	bool			passwd;
 	int				fd_;
 };

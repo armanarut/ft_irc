@@ -13,27 +13,24 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 
-#include "ircserv.hpp"
-#include "Channel.hpp"
-#include "Client.hpp"
+#include "Operators.hpp"
+// #include "Channel.hpp"
+// #include "Client.hpp"
 
 class Server
 {
+public:
+
     typedef std::map<int, Client>::iterator  iterator;
 
-public:
     Server(short port, const std::string& pass)
         :_port(port),
-        _pass(pass)
+        _pass(pass),
+        _operators(_client, _user, _channel, _pass)
     {
         init_server();
         start();
     };
-
-    Server(const Server& other)
-        :_port(other._port),
-        _pass(other._pass)
-    {};
 
     ~Server()
     {
@@ -52,6 +49,7 @@ private:
     std::map<int, Client>           _client;
     std::map<std::string, int>      _user;
 	std::map<std::string, Channel>	_channel;
+	Operators	                    _operators;
 
 /****************[init server]****************/
     void    init_server()
@@ -188,283 +186,116 @@ private:
             it->second.buffer.erase(0, line.size() + 1);
         }
         std::cout << "Incoming command: " << line << std::endl;
-        std::string word;
-        if (line.rfind(" ") == std::string::npos)
-            word = line;
-        else
-            word = line.substr(0, line.find(" "));
 
-        if (word.size())
-        {
-            if (line.size() == word.size())
-            {
-                SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-            }
-            else if (word == "CAP")
-                ;// operator_CAP(it, line.substr(word.size() + 1, line.size()));
-            else if (word == "PING")
-                ;// operator_PING(it, line.substr(word.size() + 1, line.size()));
-            else if (word == "PONG")
-                ;// operator_PONG(it, line.substr(word.size() + 1, line.size()));
-            else if (word == "USER")
-                operator_USER(it, line.substr(word.size() + 1, line.size()));
-            else if (word == "NICK")
-                operator_NICK(it, line.substr(word.size() + 1, line.size()));
-            else if (word == "NOTICE")
-                operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()), "NOTICE");
-            else if (word == "PRIVMSG")
-                operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()), "PRIVMSG");
-            else if (word == "JOIN")
-                operator_JOIN(it, line.substr(word.size() + 1, line.size()));
-            else if (word == "PART")
-                operator_PART(it, line.substr(word.size() + 1, line.size()));
-			else if (word == "KICK")
-				operator_KICK(it, line.substr(word.size() + 1, line.size()));
-            else if (word == "LUSERS")
-                operator_LUSERS(it);
-            else
-            {
-                std::cout  << line << ERR_UNKNOWNCOMMAND << std::endl;
-                SEND_ERR(it->first, word, ERR_UNKNOWNCOMMAND);
-            }
-        }
+        std::string command;
+        if (line.rfind(" ") == std::string::npos)
+            command = line;
+        else
+            command = line.substr(0, line.find(" "));
+
+        if (line.size() == command.size())
+            line.clear();
+        else
+            line.substr(command.size() + 1, line.size());
+
+        _operators(command, it, line);
+
+        // if (!word.empty())
+        // {
+        //     if (word == "CAP")
+        //         ;// operator_CAP(it, line.substr(word.size() + 1, line.size()));
+        //     else if (word == "PING")
+        //         ;// operator_PING(it, line.substr(word.size() + 1, line.size()));
+        //     else if (word == "PONG")
+        //         ;// operator_PONG(it, line.substr(word.size() + 1, line.size()));
+        //     else if (word == "PASS")
+        //     {
+        //         if (CHECK_PARAM(line, word))
+        //         {
+        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        //         }
+        //         else
+        //             operator_PASS(it, line.substr(word.size() + 1, line.size()));
+        //     }
+        //     else if (word == "USER")
+        //     {
+        //         if (CHECK_PARAM(line, word))
+        //         {
+        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        //         }
+        //         else
+        //         operator_USER(it, line.substr(word.size() + 1, line.size()));
+        //     }
+        //     else if (word == "NICK")
+        //     {
+        //         if (CHECK_PARAM(line, word))
+        //         {
+        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        //         }
+        //         else
+        //         operator_NICK(it, line.substr(word.size() + 1, line.size()));
+        //     }
+        //     else if (!it->second.isRegistered())
+        //     {
+        //         SEND_MSG(it->first, NOT_REGISTERED);
+        //     }
+        //     else if (word == "NOTICE")
+        //     {
+        //         if (CHECK_PARAM(line, word))
+        //         {
+        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        //         }
+        //         else
+        //         operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()), "NOTICE");
+        //     }
+        //     else if (word == "PRIVMSG")
+        //     {
+        //         if (CHECK_PARAM(line, word))
+        //         {
+        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        //         }
+        //         else
+        //         operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()), "PRIVMSG");
+        //     }
+        //     else if (word == "JOIN")
+        //     {
+        //         if (CHECK_PARAM(line, word))
+        //         {
+        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        //         }
+        //         else
+        //         operator_JOIN(it, line.substr(word.size() + 1, line.size()));
+        //     }
+        //     else if (word == "PART")
+        //     {
+        //         if (CHECK_PARAM(line, word))
+        //         {
+        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        //         }
+        //         else
+        //         operator_PART(it, line.substr(word.size() + 1, line.size()));
+        //     }
+		// 	else if (word == "KICK")
+        //     {
+        //         if (CHECK_PARAM(line, word))
+        //         {
+        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
+        //         }
+        //         else
+		// 		operator_KICK(it, line.substr(word.size() + 1, line.size()));
+        //     }
+        //     else if (word == "LUSERS")
+        //         operator_LUSERS(it);
+        //     else
+        //     {
+        //         std::cout  << line << ERR_UNKNOWNCOMMAND << std::endl;
+        //         SEND_ERR(it->first, word, ERR_UNKNOWNCOMMAND);
+        //     }
+        // }
         if (it->second.buffer.size())
             check_operators(it);
     }
 
-	void	operator_KICK(iterator &it, const std::string& line)
-	{
-		std::string channel_name, user_name, msg_text;
-
-        int pos = 0;
-
-        channel_name = line.substr(pos, line.find(" ", pos) - pos);
-        pos += channel_name.size() + 1;
-        user_name = line.substr(pos, line.find(" ", pos) - pos);
-        pos += user_name.size(); // + 1;
-        msg_text = line.substr(pos, line.size());
-
-		if (!channel_name.size() || !user_name.size())
-		{
-			SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-		}
-		else if (_channel.find(channel_name) == _channel.end())
-		{
-			SEND_ERR(it->first, channel_name, ERR_NOSUCHCHANNEL);
-		}
-		else
-		{
-			if (!(_channel[channel_name].isAdmin(&it->second)))
-			{
-				SEND_MSG(it->first, ERR_CHANOPRIVSNEEDED);
-				return;
-			}
-		    else if (_user.find(user_name) == _user.end())
-			{
-				SEND_MSG(it->first, ERR_NOSUCHNICK);
-				return;
-			}
-			else if (!_channel[channel_name].search_user(&_client.at(_user[user_name])))
-			{
-				SEND_MSG(it->first, ERR_USERNOTINCHANNEL);
-			}
-            else
-            {
-				SEND_STRING(_user[user_name], msg_text);
-				_channel[channel_name].leave_chanel(&_client.at(_user[user_name]));
-            }
-		}
-	}
-
-    void    operator_LUSERS(iterator &it)
-    {
-        std::string msg = (it->second.getNick() + " " + std::to_string(_user.size()));
-        SEND_ERR(it->first, msg, RPL_LUSEROP);
-    }
-
-    // void    operator_CAP(iterator &it, const std::string& line)
-    // {
-    //     std::string sub;
-
-    //     sub = line.substr(0, line.find(" "));
-    //     if (sub == "LS")
-    //     {
-    //         ;// send(it->first, "002 [admin]\r\n", 11, 0);
-    //         // SEND_CLIENT(it->first, "SERVER", "CAP", "*", "multi-prefix sasl");
-    //     }
-    // }
-
-    void    operator_PING(iterator &it, const std::string& line)
-    {
-        std::string text;
-
-        text = line.substr(0, line.find(" "));
-        if (text[0] != ':')
-        {
-            SEND_MSG(it->first, ERR_NOTEXTTOSEND);
-            return ;
-        }
-        else
-        {
-            SEND_CLIENT(it->first, "SERVER", "PING", " ", line.substr(1, text.size()).c_str());
-        }
-    }
-
-    void    operator_PONG(iterator &it, const std::string& line)
-    {
-        std::string text;
-
-        text = line.substr(0, line.find(" "));
-        if (text[0] != ':')
-        {
-            SEND_MSG(it->first, ERR_NOTEXTTOSEND);
-            return ;
-        }
-        else
-        {
-            SEND_CLIENT(it->first, "SERVER", "PONG", " ", line.substr(1, text.size()).c_str());
-        }
-    }
-
-    void    operator_USER(iterator &it, const std::string& line)
-    {
-        int pos = 0;
-        std::string word;
-        std::string user;
-        std::string host;
-
-        user = line.substr(pos, line.find(" ", pos) - pos);
-        pos += user.size() + 1;
-        word = line.substr(pos, line.find(" ", pos) - pos);
-        pos += word.size() + 1;
-        word = line.substr(pos, line.find(" ", pos) - pos);
-        if (word[0] != ':')
-        {
-            pos += word.size() + 1;
-            host = word;
-        }
-        it->second.init(user, host, line.substr(pos + 1, line.size()));
-    }
-
-    void    operator_PART(iterator &it, const std::string& line)
-    {
-        std::string word;
-
-        word = line.substr(0, line.find(" "));
-        if (!word.size())
-        {
-            SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        }
-        else if (_channel.find(word) == _channel.end())
-        {
-            SEND_ERR(it->first, word, ERR_NOSUCHCHANNEL);
-        }
-        else if (!_channel[word].isAvelabel(&it->second))
-        {
-            SEND_ERR(it->first, word, ERR_NOTONCHANNEL);
-        }
-        else
-        {
-            _channel[word].leave_chanel(&it->second);
-            SEND_CHANEL(it->first, word, LEAVE_CHANNEL);
-        }
-    }
-
-    void    operator_JOIN(iterator &it, const std::string& line)
-    {
-        std::string word;
-
-        word = line.substr(0, line.find(" "));
-        if (!word.size())
-        {
-            SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        }
-        else if (word[0] != '#')
-        {
-            SEND_ERR(it->first, word, ERR_BADCHANMASK);
-        }
-        else
-        {
-            if (_channel.find(word) == _channel.end())
-                _channel.insert(std::make_pair(word, Channel(word)));
-            _channel[word].add_user(&it->second);
-            SEND_CHANEL(it->first, word, JOIN_CHANNEL);
-        }
-    }
-
-    void    operator_PRIVMSG(iterator &it, const std::string& line, std::string command)
-    {
-        std::string word;
-        std::string text;
-
-        word = line.substr(0, line.find(" "));
-        if (!word.size() || line.rfind(" ") == std::string::npos)
-        {
-            SEND_MSG(it->first, ERR_NORECIPIENT);
-            return ;
-        }
-        text = line.substr(word.size() + 1, line.size());
-        if (!text.size())
-        {
-            SEND_MSG(it->first, ERR_NOTEXTTOSEND);
-            return ;
-        }
-        if (text[0] != ':')
-        {
-            SEND_MSG(it->first, ERR_NOTEXTTOSEND);
-            return ;
-        }
-        else
-            text.erase(text.begin());
-        if (word[0] == '#')
-        {
-            if (_channel.find(word) == _channel.end())
-            {
-                SEND_ERR(it->first, word, ERR_NOSUCHNICK);
-            }
-            else if (!_channel[word].isAvelabel(&it->second))
-            {
-                SEND_ERR(it->first, word, ERR_CANNOTSENDTOCHAN);
-            }
-            else
-                _channel[word].sendMsg(&it->second, text, command);
-        }
-        else
-        {
-            if (_user.find(word) == _user.end())
-            {
-                SEND_ERR(it->first, word, ERR_NOSUCHNICK);
-            }
-            else
-                it->second.sendMsg(_user[word], text, word, "PRIVMSG");
-        }
-    }
-
-    void    operator_NICK(iterator &it, const std::string& line)
-    {
-        std::string word;
-
-        word = line.substr(0, line.find(" "));
-        if (!word.size())
-        {
-            SEND_MSG(it->first, ERR_NONICKNAMEGIVEN);
-        }
-        else if (!is_all_alpha(word))
-        {
-            SEND_ERR(it->first, word, ERR_ERRONEUSNICKNAME);
-        }
-        else if (_user.find(word) != _user.end() && _user[word] != it->first)
-        {
-            SEND_ERR(it->first, word, ERR_NICKNAMEINUSE);
-        }
-        else
-        {
-            _user.erase(word);
-            std::cout << "setting NICK: " << word << std::endl;
-            it->second.setNick(word);
-            _user.insert(std::make_pair(word, it->first));
-        }
-    }
 
     Server();
     Server& operator=(const Server& other);
