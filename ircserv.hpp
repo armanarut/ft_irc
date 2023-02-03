@@ -1,5 +1,7 @@
 #pragma once
 
+#define BUF_SIZE 1024
+
 #define ERR_NONICKNAMEGIVEN     " :No nickname given"
 #define ERR_ERRONEUSNICKNAME    " :Erroneous nickname"
 #define ERR_NICKNAMEINUSE       " :Nickname is already in use"
@@ -47,6 +49,27 @@
     send(fd, (_nick_or_channel + " :").c_str(), _nick_or_channel.length() + 2, 0);    \
     send(fd, _msg.c_str(), _msg.length(), 0); \
     send(fd,"\r\n", 2, 0)
+
+#include <string>
+#include <unistd.h>
+#include <fcntl.h>
+#include <map>
+#include <vector>
+#include <iostream>
+// #include <cerrno>
+// #include <cstring>
+// #include <sstream>
+
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/select.h>
+
+#include "Server.hpp"
+#include "Client.hpp"
+#include "Channel.hpp"
+#include "Bot.hpp"
+
+
 /****************[utils]****************/
 void	prog_error(std::string err);
 bool	is_all_alpha(std::string str);

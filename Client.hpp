@@ -1,12 +1,9 @@
 #pragma once
 
-#include <string>
-#include <sys/socket.h>
-
-
-#define BUF_SIZE 1024
+#include "ircserv.hpp"
 
 class Channel;
+class Server;
 
 class Client
 {
@@ -20,8 +17,8 @@ public:
 		realname(),
 		passwd(false),
 		fd_(fd) {}
-
-	~Client() {}
+	
+	virtual ~Client() {}
 
 	void	init(const std::string& user, const std::string& host, const std::string& real)
 	{
@@ -76,8 +73,13 @@ public:
 	}
 
     std::string		buffer;
+	
+	// virtual void    start_bot(Server *, std::map<int, Client>::iterator, std::string);
 
 private:
+
+	
+
 	std::string		nickname;
 	std::string		username;
 	std::string		hostname;

@@ -44,8 +44,8 @@ fclean: clean
 re: fclean all
 
 server: fclean all
-			./$(NAME) 667 123
+			./$(NAME) 6667 123
 client: 
-		nc localhost 667
+		nc localhost 6667
 
 .PHONY:		all clean fclean re run server client

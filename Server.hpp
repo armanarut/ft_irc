@@ -1,32 +1,18 @@
 #pragma once
 
-#include <string>
-#include <unistd.h>
-#include <fcntl.h>
-#include <map>
-#include <iostream>
-// #include <cerrno>
-// #include <cstring>
-// #include <sstream>
-
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-
 #include "ircserv.hpp"
-#include "Channel.hpp"
-#include "Client.hpp"
 
 class Server
 {
     typedef std::map<int, Client>::iterator  iterator;
-
+    friend class Bot;
 public:
     Server(short port, const std::string& pass)
         :_port(port),
         _pass(pass)
     {
         init_server();
+        // create_bot();
         start();
     };
 
@@ -69,7 +55,6 @@ private:
         address.sin_family = AF_INET;
         address.sin_addr.s_addr = INADDR_ANY;
         address.sin_port = htons(_port);
-
         if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0)
             prog_error("bind failed");
 
@@ -78,7 +63,16 @@ private:
 
         fcntl(server_fd, F_SETFL, O_NONBLOCK);
     };
+/****************[make bot]****************/
+    // void create_bot()
+    // {
+    //     Bot bot(server_fd);
 
+    //     _client.insert(std::make_pair(server_fd, bot));
+    //     iterator it = _client.begin();
+    //     operator_NICK(it , "bot");
+    //     // operator_PA(*(&_client.begin()), "bot");
+    // }
 /****************[make select]****************/
     void    start()
     {
@@ -222,6 +216,8 @@ private:
 				operator_KICK(it, line.substr(word.size() + 1, line.size()));
             else if (word == "LUSERS")
                 operator_LUSERS(it);
+            // else if (word == "BOT")
+            //     {   _client[server_fd].start_bot(this, it, line.substr(word.size() + 1, line.size())); }
             else
             {
                 std::cout  << line << ERR_UNKNOWNCOMMAND << std::endl;
@@ -266,11 +262,11 @@ private:
 			}
 			else if (!_channel[channel_name].search_user(&_client.at(_user[user_name])))
 			{
-				SEND_MSG(it->first, ERR_USERNOTINCHANNEL);
+				SEND_ERR(it->first, (":"  + user_name + " " + channel_name), ERR_USERNOTINCHANNEL);
 			}
             else
             {
-				SEND_STRING(_user[user_name], msg_text);
+				it->second.sendMsg(_user[user_name], msg_text, channel_name, "KICK");
 				_channel[channel_name].leave_chanel(&_client.at(_user[user_name]));
             }
 		}
@@ -406,6 +402,9 @@ private:
         text = line.substr(word.size() + 1, line.size());
         if (!text.size())
         {
+            std::cout << "line = " << line << std::endl;
+            std::cout << "word = " << word << std::endl;
+            std::cout << "text = " << text << std::endl;
             SEND_MSG(it->first, ERR_NOTEXTTOSEND);
             return ;
         }
