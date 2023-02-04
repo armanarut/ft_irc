@@ -1,5 +1,7 @@
 #pragma once
 
+#define BUF_SIZE 1024
+
 #define ERR_NONICKNAMEGIVEN     " :No nickname given"
 #define ERR_ERRONEUSNICKNAME    " :Erroneous nickname"
 #define ERR_NICKNAMEINUSE       " :Nickname is already in use"

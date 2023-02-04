@@ -1,22 +1,6 @@
 #include "Operators.hpp"
 
-void	Operators::operator_PASS(iterator &it, const std::string& pass)
-{
-    if (it->second.isRegistered())
-    {
-        SEND_MSG(it->first, ERR_ALREADYREGISTERED);
-        return ;
-    }
-    if (_pass.compare(pass))
-    {
-        SEND_ERR(it->first, it->second.getNick(), ERR_PASSWDMISMATCH);
-    }
-    else
-    {
-        it->second.unlockPasswd();
-        it->second.registering();
-    }
-}
+
 
 void	Operators::operator_KICK(iterator &it, const std::string& line)
 {
@@ -73,9 +57,9 @@ void	Operators::operator_KICK(iterator &it, const std::string& line)
 
 void    Operators::operator_LUSERS(iterator &it, const std::string& line)
 {
-    (void)line;
-    std::string msg = (it->second.getNick() + " " + std::to_string(_user.size()));
-    SEND_ERR(it->first, msg, RPL_LUSEROP);
+    (void)it; (void)line;
+    // std::string msg = (it->second.getNick() + " " + std::to_string(_user.size()));
+    // SEND_ERR(it->first, msg, RPL_LUSEROP);
 }
 
 void    Operators::operator_CAP(iterator &it, const std::string& line)

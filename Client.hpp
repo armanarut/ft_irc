@@ -1,12 +1,10 @@
 #pragma once
 
 #include <string>
+#include <cstring>
 #include <iostream>
 #include <sys/socket.h>
 #include "ircserv.hpp"
-
-
-#define BUF_SIZE 1024
 
 class Channel;
 

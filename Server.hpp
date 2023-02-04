@@ -1,19 +1,18 @@
 #pragma once
 
-#include <string>
+#include "Operators.hpp"
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <map>
-#include <iostream>
+#include <netinet/in.h>
+#include <sys/select.h>
+// #include <iostream>
+// #include <string>
 // #include <cerrno>
 // #include <cstring>
 // #include <sstream>
-
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-
-#include "Operators.hpp"
+// #include <sys/socket.h>
 // #include "Channel.hpp"
 // #include "Client.hpp"
 
@@ -86,7 +85,9 @@ private:
 
         tv.tv_sec = 0;
         tv.tv_usec = 300000;
-        (FD_ZERO(&rd), FD_ZERO(&wr), FD_ZERO(&er));
+        FD_ZERO(&rd);
+        FD_ZERO(&wr);
+        FD_ZERO(&er);
         for(;;)
         {
             if (_client.size())

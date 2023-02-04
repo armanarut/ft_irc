@@ -23,14 +23,26 @@ public:
             init_operators();
         };
 
+    int hello(int i)
+    {
+        return i;
+    }
+
     void operator()(const std::string& command, iterator& it, const std::string& line)
     {
-        if (command == "PASS")
-            operator_PASS(it, line);
+        (void)command; (void)it; (void)line;
+        // if (command == "PASS")
+        //     this->foo(it, line);
+            // operator_PASS(it, line);
     }
 
     void    init_operators()
     {
+        int(Operators::*func)(int);
+        func = &Operators::hello;
+        *func(1);
+
+        // foo = &Operators::operator_PASS;
         // this->add_operator("PASS", &this->operator_PASS);
         // this->add_operator("KICK", this->operator_KICK);
         // this->add_operator("LUSERS", this->operator_LUSERS);
@@ -50,7 +62,33 @@ public:
         _operator.insert(std::make_pair(command, f));
     }
 
-    void	operator_PASS(iterator &it, const std::string& pass);
+private:
+
+    std::map<std::string, void(*)(iterator&, const std::string&)>    _operator;
+    std::map<int, Client>&           _client;
+    std::map<std::string, int>&      _user;
+	std::map<std::string, Channel>&	_channel;
+    std::string&  _pass;
+    void(Operators::*foo)(iterator&, const std::string&);
+
+void	operator_PASS(iterator &it, const std::string& pass)
+{
+    if (it->second.isRegistered())
+    {
+        SEND_MSG(it->first, ERR_ALREADYREGISTERED);
+        return ;
+    }
+    if (_pass.compare(pass))
+    {
+        SEND_ERR(it->first, it->second.getNick(), ERR_PASSWDMISMATCH);
+    }
+    else
+    {
+        it->second.unlockPasswd();
+        it->second.registering();
+    }
+}
+    // void	operator_PASS(iterator &it, const std::string& pass);
 	void	operator_KICK(iterator &it, const std::string& line);
     void    operator_LUSERS(iterator &it, const std::string& line);
     void    operator_CAP(iterator &it, const std::string& line);
@@ -62,13 +100,4 @@ public:
     void    operator_PRIVMSG(iterator &it, const std::string& line);
     void    operator_NOTICE(iterator &it, const std::string& line);
     void    operator_NICK(iterator &it, const std::string& line);
-
-private:
-
-    std::map<std::string, void(*)(iterator&, const std::string&)>    _operator;
-    std::map<int, Client>&           _client;
-    std::map<std::string, int>&      _user;
-	std::map<std::string, Channel>&	_channel;
-    std::string&  _pass;
-
 };
