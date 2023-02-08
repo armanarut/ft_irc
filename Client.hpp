@@ -1,12 +1,15 @@
 #pragma once
 
+class Client;
+
 #include <string>
 #include <cstring>
+#include <map>
 #include <iostream>
 #include <sys/socket.h>
-#include "ircserv.hpp"
 
-class Channel;
+#include "Channel.hpp"
+#include "ircserv.hpp"
 
 class Client
 {
@@ -85,6 +88,24 @@ public:
 		// 	send(socket_fd, (nick_or_channel + " :").c_str(), nick_or_channel.length() + 2, 0);
 		// send(socket_fd, msg.c_str(), msg.length(), 0);
 		// send(socket_fd,"\r\n", 2, 0);
+	}
+
+	std::string	getPerfix()
+	{
+		return (nickname + (username.empty() ? "" : "!" + username) + (hostname.empty() ? "" : "@" + hostname));
+	}
+
+	void	sending(const std::string& massage)
+	{
+		std::string buffer = massage + "\r\n";
+
+		if (send(fd_, buffer.c_str(), buffer.length(), 0) < 0)
+			throw std::runtime_error("Error: can't send message to client.");
+	}
+
+	void reply(const std::string& reply)
+	{
+		sending(":" + getPerfix() + " " + reply);
 	}
 
     std::string		buffer;
