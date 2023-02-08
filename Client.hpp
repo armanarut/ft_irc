@@ -1,12 +1,15 @@
 #pragma once
 
+class Client;
+
 #include <string>
+#include <cstring>
+#include <map>
+#include <iostream>
 #include <sys/socket.h>
 
-
-#define BUF_SIZE 1024
-
-class Channel;
+#include "Channel.hpp"
+#include "ircserv.hpp"
 
 class Client
 {
@@ -18,6 +21,7 @@ public:
 		username(),
 		hostname(),
 		realname(),
+		registered(false),
 		passwd(false),
 		fd_(fd) {}
 
@@ -56,9 +60,20 @@ public:
 		return (fd_);
 	}
 
-	void	setPasswd()
+	void	registering()
+	{
+		if (passwd && !username.empty() && !realname.empty() && !nickname.empty())
+			registered = true;
+	}
+
+	void	unlockPasswd()
 	{
 		passwd = true;
+	}
+
+	bool	isRegistered()
+	{
+		return (registered);
 	}
 
 	bool	hasPasswd()
@@ -75,6 +90,24 @@ public:
 		// send(socket_fd,"\r\n", 2, 0);
 	}
 
+	std::string	getPerfix()
+	{
+		return (nickname + (username.empty() ? "" : "!" + username) + (hostname.empty() ? "" : "@" + hostname));
+	}
+
+	void	sending(const std::string& massage)
+	{
+		std::string buffer = massage + "\r\n";
+
+		if (send(fd_, buffer.c_str(), buffer.length(), 0) < 0)
+			throw std::runtime_error("Error: can't send message to client.");
+	}
+
+	void reply(const std::string& reply)
+	{
+		sending(":" + getPerfix() + " " + reply);
+	}
+
     std::string		buffer;
 
 private:
@@ -82,6 +115,7 @@ private:
 	std::string		username;
 	std::string		hostname;
 	std::string		realname;
+	bool			registered;
 	bool			passwd;
 	int				fd_;
 };
