@@ -42,3 +42,30 @@ public:
 
     void    execute(Client *client, std::vector<std::string> arguments);
 };
+
+class CommandUSER: public Command
+{
+public:
+    CommandUSER(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandUSER(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};
+
+class CommandPRIVMSG: public Command
+{
+public:
+    CommandPRIVMSG(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandPRIVMSG(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};
+
+class CommandNOTICE: public Command
+{
+public:
+    CommandNOTICE(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandNOTICE(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};

@@ -35,7 +35,7 @@ void    CommandNICK::execute(Client *client, std::vector<std::string> arguments)
         return ;
     }
     Client* client_avel = _server->getClient(nickname);
-    if (client_avel != nullptr &&  client_avel != client)
+    if (client_avel &&  client_avel != client)
     {
         client->reply(ERR_NICKNAMEINUSE(client->getNick(), nickname));
         return ;
@@ -44,6 +44,111 @@ void    CommandNICK::execute(Client *client, std::vector<std::string> arguments)
     client->setNick(nickname);
     if (!client->isRegistered())
         client->registering();
+}
+
+void    CommandUSER::execute(Client *client, std::vector<std::string> arguments)
+{
+    if (client->isRegistered())
+    {
+        client->reply(ERR_ALREADYREGISTERED(client->getNick()));
+        return ;
+    }
+    if (arguments.size() < 4)
+    {
+        client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "USER"));
+        return ;
+    }
+    std::string username = arguments[0];
+    std::string realname = arguments[3].substr(arguments[3][0] == ':' ? 1 : 0);
+    for (size_t i = 4; i < arguments.size(); ++i)
+        realname.append(" " + arguments[i]);
+    
+    client->init(username, realname);
+    client->registering();
+}
+
+void    CommandPRIVMSG::execute(Client *client, std::vector<std::string> arguments)
+{
+    if (arguments.empty())
+    {
+        client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "PRIVMSG"));
+        return ;
+    }
+    if (arguments.size() < 2)
+    {
+        client->reply(ERR_NOTEXTTOSEND(client->getNick()));
+        return ;
+    }
+    std::string target = arguments[0];
+    std::string message = arguments[1].substr(arguments[1][0] == ':' ? 1 : 0);
+    for (size_t i = 2; i < arguments.size(); ++i)
+        message.append(" " + arguments[i]);
+    if (target[0] == '#')
+    {
+        Channel* channel = _server->getChannel(target);
+        if (!channel)
+        {
+            client->reply(ERR_NOSUCHNICK(client->getNick(), target));
+            return ;
+        }
+        if (!channel->isAvelabel(client))
+        {
+            client->reply(ERR_CANNOTSENDTOCHAN(client->getNick(), target));
+            return ;
+        }
+        channel->sending(client, message, "PRIVMSG");
+        return ;
+    }
+
+    Client* user = _server->getClient(target);
+    if (!user)
+    {
+        client->reply(ERR_NOSUCHNICK(client->getNick(), target));
+        return ;
+    }
+    user->sending(RPL_MSG(client->getPrefix(), "PRIVMSG", target, message));
+}
+
+void    CommandNOTICE::execute(Client *client, std::vector<std::string> arguments)
+{
+    if (arguments.empty())
+    {
+        client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "NOTICE"));
+        return ;
+    }
+    if (arguments.size() < 2)
+    {
+        client->reply(ERR_NOTEXTTOSEND(client->getNick()));
+        return ;
+    }
+    std::string target = arguments[0];
+    std::string message = arguments[1].substr(arguments[1][0] == ':' ? 1 : 0);
+    for (size_t i = 2; i < arguments.size(); ++i)
+        message.append(" " + arguments[i]);
+    if (target[0] == '#')
+    {
+        Channel* channel = _server->getChannel(target);
+        if (!channel)
+        {
+            client->reply(ERR_NOSUCHNICK(client->getNick(), target));
+            return ;
+        }
+        if (!channel->isAvelabel(client))
+        {
+            client->reply(ERR_CANNOTSENDTOCHAN(client->getNick(), target));
+            return ;
+        }
+        channel->sending(client, message, "NOTICE");
+        return ;
+    }
+
+    Client* user = _server->getClient(target);
+    if (!user)
+    {
+        client->reply(ERR_NOSUCHNICK(client->getNick(), target));
+        return ;
+    }
+    user->sending(RPL_MSG(client->getPrefix(), "NOTICE", target, message));
 }
 
 // void	Operators::operator_KICK(iterator &it, const std::string& line)
@@ -151,32 +256,6 @@ void    CommandNICK::execute(Client *client, std::vector<std::string> arguments)
 //     }
 // }
 
-// void    Operators::operator_USER(iterator &it, const std::string& line)
-// {
-//     if (it->second.isRegistered())
-//     {
-//         SEND_MSG(it->first, ERR_ALREADYREGISTERED);
-//         return ;
-//     }
-//     int pos = 0;
-//     std::string word;
-//     std::string user;
-//     std::string host;
-
-//     user = line.substr(pos, line.find(" ", pos) - pos);
-//     pos += user.size() + 1;
-//     word = line.substr(pos, line.find(" ", pos) - pos);
-//     pos += word.size() + 1;
-//     word = line.substr(pos, line.find(" ", pos) - pos);
-//     if (word[0] != ':')
-//     {
-//         pos += word.size() + 1;
-//         host = word;
-//     }
-//     it->second.init(user, host, line.substr(pos + 1, line.size()));
-//     it->second.registering();
-// }
-
 // void    Operators::operator_PART(iterator &it, const std::string& line)
 // {
 //     std::string word;
@@ -220,101 +299,5 @@ void    CommandNICK::execute(Client *client, std::vector<std::string> arguments)
 //             _channel.insert(std::make_pair(word, Channel(word)));
 //         _channel[word].add_user(&it->second);
 //         SEND_CHANEL(it->first, word, JOIN_CHANNEL);
-//     }
-// }
-
-// void    Operators::operator_PRIVMSG(iterator &it, const std::string& line)
-// {
-//     std::string word;
-//     std::string text;
-
-//     word = line.substr(0, line.find(" "));
-//     if (!word.size() || line.rfind(" ") == std::string::npos)
-//     {
-//         SEND_MSG(it->first, ERR_NORECIPIENT);
-//         return ;
-//     }
-//     text = line.substr(word.size() + 1, line.size());
-//     if (!text.size())
-//     {
-//         SEND_MSG(it->first, ERR_NOTEXTTOSEND);
-//         return ;
-//     }
-//     if (text[0] != ':')
-//     {
-//         SEND_MSG(it->first, SINTAX_ERROR);
-//         return ;
-//     }
-//     else
-//         text.erase(text.begin());
-//     if (word[0] == '#')
-//     {
-//         if (_channel.find(word) == _channel.end())
-//         {
-//             SEND_ERR(it->first, word, ERR_NOSUCHNICK);
-//         }
-//         else if (!_channel[word].isAvelabel(&it->second))
-//         {
-//             SEND_ERR(it->first, word, ERR_CANNOTSENDTOCHAN);
-//         }
-//         else
-//             _channel[word].sendMsg(&it->second, text, "PRIVMSG");
-//     }
-//     else
-//     {
-//         if (_user.find(word) == _user.end())
-//         {
-//             SEND_ERR(it->first, word, ERR_NOSUCHNICK);
-//         }
-//         else
-//             it->second.sendMsg(_user[word], text, word, "PRIVMSG");
-//     }
-// }
-
-// void    Operators::operator_NOTICE(iterator &it, const std::string& line)
-// {
-//     std::string word;
-//     std::string text;
-
-//     word = line.substr(0, line.find(" "));
-//     if (!word.size() || line.rfind(" ") == std::string::npos)
-//     {
-//         SEND_MSG(it->first, ERR_NORECIPIENT);
-//         return ;
-//     }
-//     text = line.substr(word.size() + 1, line.size());
-//     if (!text.size())
-//     {
-//         SEND_MSG(it->first, ERR_NOTEXTTOSEND);
-//         return ;
-//     }
-//     if (text[0] != ':')
-//     {
-//         SEND_MSG(it->first, SINTAX_ERROR);
-//         return ;
-//     }
-//     else
-//         text.erase(text.begin());
-//     if (word[0] == '#')
-//     {
-//         if (_channel.find(word) == _channel.end())
-//         {
-//             SEND_ERR(it->first, word, ERR_NOSUCHNICK);
-//         }
-//         else if (!_channel[word].isAvelabel(&it->second))
-//         {
-//             SEND_ERR(it->first, word, ERR_CANNOTSENDTOCHAN);
-//         }
-//         else
-//             _channel[word].sendMsg(&it->second, text, "NOTICE");
-//     }
-//     else
-//     {
-//         if (_user.find(word) == _user.end())
-//         {
-//             SEND_ERR(it->first, word, ERR_NOSUCHNICK);
-//         }
-//         else
-//             it->second.sendMsg(_user[word], text, word, "NOTICE");
 //     }
 // }
