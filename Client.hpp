@@ -16,10 +16,10 @@ class Client
 	typedef std::map<std::string, Channel>::iterator iterator;
 public:
 
-	Client(int fd)
+	Client(int fd, std::string _hostname)
 		:nickname(),
 		username(),
-		hostname(),
+		hostname(_hostname),
 		realname(),
 		registered(false),
 		passwd(false),
@@ -27,11 +27,9 @@ public:
 
 	~Client() {}
 
-	void	init(const std::string& user, const std::string& host, const std::string& real)
+	void	init(const std::string& user, const std::string& real)
 	{
-        std::cout << "operator_USER: username=" << user << " hostname=" << host << " realname=" << real << std::endl;
 		username = user;
-		hostname = host;
 		realname = real;
 	}
 
@@ -63,7 +61,10 @@ public:
 	void	registering()
 	{
 		if (passwd && !username.empty() && !realname.empty() && !nickname.empty())
+		{
 			registered = true;
+			reply(RPL_WELCOME(nickname));
+		}
 	}
 
 	void	unlockPasswd()
@@ -81,16 +82,7 @@ public:
 		return (passwd);
 	}
 
-	void	sendMsg(int socket_fd, const std::string &msg, const std::string &nick_or_channel, const std::string &command)
-	{
-		SEND_CLIENT(socket_fd, nickname, command, nick_or_channel.c_str(), msg.c_str());
-		// send(socket_fd, (":" + nickname + " PRIVMSG ").c_str(), nickname.length() + 10, 0);
-		// 	send(socket_fd, (nick_or_channel + " :").c_str(), nick_or_channel.length() + 2, 0);
-		// send(socket_fd, msg.c_str(), msg.length(), 0);
-		// send(socket_fd,"\r\n", 2, 0);
-	}
-
-	std::string	getPerfix()
+	std::string	getPrefix()
 	{
 		return (nickname + (username.empty() ? "" : "!" + username) + (hostname.empty() ? "" : "@" + hostname));
 	}
@@ -105,7 +97,7 @@ public:
 
 	void reply(const std::string& reply)
 	{
-		sending(":" + getPerfix() + " " + reply);
+		sending(":" + getPrefix() + " " + reply);
 	}
 
     std::string		buffer;

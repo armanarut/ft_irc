@@ -6,6 +6,7 @@ class Server;
 #include <fcntl.h>
 #include <map>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <sys/select.h>
 
 #include "Client.hpp"
@@ -31,6 +32,7 @@ public:
 
     std::string getPass();
     Client* getClient(const std::string& nickname);
+    Channel* getChannel(const std::string& name);
     void    setUser(const std::string& nickname, int fd);
 
 private:

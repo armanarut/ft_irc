@@ -4,7 +4,7 @@
     {
     _commands["PASS"] = new CommandPASS(_server, false);
     _commands["NICK"] = new CommandNICK(_server, false);
-    // _commands["USER"] = new CommandUSER(_server, false);
+    _commands["USER"] = new CommandUSER(_server, false);
 	// _commands["QUIT"] = new QuitCommand(_server, false);
 
     // _commands["PING"] = new CommandPING(_server);
@@ -15,8 +15,8 @@
     // _commands["LUSERS"] = new CommandLUSERS(_server);
     // _commands["CAP"] = new CommandCAP(_server);
 
-    // _commands["PRIVMSG"] = new CommandPRIVMSG(_server);
-    // _commands["NOTICE"] = new CommandNOTICE(_server);
+    _commands["PRIVMSG"] = new CommandPRIVMSG(_server);
+    _commands["NOTICE"] = new CommandNOTICE(_server);
     }
 
     CommandHandler::~CommandHandler(){}

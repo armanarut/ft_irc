@@ -28,11 +28,11 @@
             admin_ = users_[0];
     }
 
-	void	Channel::sendMsg(Client* client, const std::string& msg, const std::string& command)
+	void	Channel::sending(Client* client, const std::string& message, const std::string& command)
 	{
         for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
             if (*it != client)
-                client->sendMsg((*it)->getFd(), msg, name_, command);
+                (*it)->sending(RPL_MSG(client->getPrefix(), command, name_, message));
 	}
 
     bool    Channel::Channel::isAvelabel(Client* client)

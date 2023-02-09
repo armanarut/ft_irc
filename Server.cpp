@@ -32,7 +32,19 @@ Client* Server::getClient(const std::string& nickname)
     }
     catch(const std::exception& e)
     {
-        return nullptr;
+        return NULL;
+    }
+}
+
+Channel*    Server::getChannel(const std::string& name)
+{
+    try
+    {
+        return _channel[name];
+    }
+    catch(const std::exception& e)
+    {
+        return NULL;
     }
 }
 
@@ -63,7 +75,7 @@ void    Server::init_server()
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0)
         prog_error("bind failed");
 
-    if (listen(server_fd, 10) < 0)
+    if (listen(server_fd, 100) < 0)
         prog_error("listen");
 
     fcntl(server_fd, F_SETFL, O_NONBLOCK);
@@ -133,7 +145,7 @@ bool    Server::get_buffer(iterator& it)
     char    buffer[BUF_SIZE];
     int     valread;
 
-    while ((memset(buffer, 0, 1024), \
+    while ((memset(buffer, 0, BUF_SIZE), \
             valread = recv(it->first, buffer, BUF_SIZE, 0)) != -1)
     {
         if (valread == 0)
@@ -161,7 +173,10 @@ void    Server::new_client()
     if (new_socket == -1)
         return ;
     fcntl(new_socket, F_SETFL, O_NONBLOCK);
-    _client.insert(std::make_pair(new_socket, new Client(new_socket)));
+    char hostname[NI_MAXHOST];
+
+    getnameinfo((struct sockaddr*)&client_address, sizeof(client_address), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV);
+    _client.insert(std::make_pair(new_socket, new Client(new_socket, hostname)));
     std::cout << "New user: " << new_socket << std::endl;
     std::cout << "Users online: " << _client.size() << std::endl;
 }
