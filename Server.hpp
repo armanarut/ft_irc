@@ -83,7 +83,7 @@ private:
         tv.tv_sec = 0;
         tv.tv_usec = 300000;
         (FD_ZERO(&rd), FD_ZERO(&wr), FD_ZERO(&er));
-        for(;;)
+        for(;;)//ра
         {
             if (_client.size())
             {
