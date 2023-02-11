@@ -4,7 +4,7 @@ CXX			= c++
 CXXFLAGS	= -Wall -Wextra -Werror -I.
 CPPFLAGS	= -std=c++98
 RM			= rm -rf
-SRCS		= BotMain.cpp Bot.cpp
+SRCS		= Bot.cpp
 OBJS		= $(SRCS:.cpp=.o)
 
 #Colors

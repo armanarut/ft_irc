@@ -55,7 +55,7 @@ int Bot::check_command(std::string in_text){
     std::string command = parsing_text(in_text);
 
     if (m_user.empty())
-        std::cout << "User not identifit" << std::endl;
+        ;//std::cout << "User not identifit" << std::endl;
     else if (command.empty())
         ;
     else if (command == "TIME\r\n")
@@ -121,4 +121,15 @@ std::string my_to_string(int num)
     stream << num;
     stream >> str;
     return str;
+}
+
+int main(int ac,char **av)
+{
+    if (ac != 5) {
+        std::cout << " [host] <port> password nick" << std::endl;
+        return 0;
+    }
+    Bot bot(av);
+    bot.start_bot();
+    return 0;
 }

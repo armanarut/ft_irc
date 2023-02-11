@@ -47,4 +47,3 @@ class Bot {
         std::string parsing_text(std::string in_text);;
         std::string get_time(void);
 };
-
