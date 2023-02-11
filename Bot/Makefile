@@ -1,10 +1,10 @@
 #Variables
-NAME		= ircserv
+NAME		= bot
 CXX			= c++
 CXXFLAGS	= -Wall -Wextra -Werror -I.
 CPPFLAGS	= -std=c++98
 RM			= rm -rf
-SRCS		= $(wildcard *.cpp)
+SRCS		= BotMain.cpp Bot.cpp
 OBJS		= $(SRCS:.cpp=.o)
 
 #Colors
@@ -25,6 +25,7 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
 endif
 
 all:		$(NAME)
+
 run:		all
 			@echo "$(GREEN)runing prog $(NAME).$(DEF_COLOR)"
 			./$(NAME) $(RUN_ARGS)
@@ -43,9 +44,7 @@ fclean: clean
 
 re: fclean all
 
-server: fclean all
-			./$(NAME) 6667 123
-client: 
-		nc localhost 6667
+start: all
+	./$(NAME) localhost 6667 123 rob
 
-.PHONY:		all clean fclean re run server client
+.PHONY:		all clean fclean re run bot
