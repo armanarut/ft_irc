@@ -2,7 +2,7 @@
 
     Channel::Channel(){}
 
-    Channel::Channel(std::string& name)
+    Channel::Channel(const std::string& name)
     :name_(name) {}
 
     Channel::~Channel() {}
@@ -55,5 +55,5 @@
 		for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
 			if (*it == client)
 				return true;
-		return true;
+		return false;
 	}

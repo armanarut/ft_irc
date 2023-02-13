@@ -83,7 +83,7 @@ void    CommandPRIVMSG::execute(Client *client, std::vector<std::string> argumen
     std::string message = arguments[1].substr(arguments[1][0] == ':' ? 1 : 0);
     for (size_t i = 2; i < arguments.size(); ++i)
         message.append(" " + arguments[i]);
-    if (target[0] == '#')
+    if (target[0] == '#' || target[0] == '&')
     {
         Channel* channel = _server->getChannel(target);
         if (!channel)
@@ -151,153 +151,116 @@ void    CommandNOTICE::execute(Client *client, std::vector<std::string> argument
     user->sending(RPL_MSG(client->getPrefix(), "NOTICE", target, message));
 }
 
-// void	Operators::operator_KICK(iterator &it, const std::string& line)
-// {
-//     std::string channel_name, user_name, msg_text;
+void    CommandCAP::execute(Client *client, std::vector<std::string> arguments)
+{
+    (void)client; (void)arguments;
+}
 
-//     int pos = 0;
+void    CommandPING::execute(Client *client, std::vector<std::string> arguments)
+{
+    if (arguments.empty())
+    {
+        client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "PING"));
+        return ;
+    }
+    client->sending(RPL_PING(client->getPrefix(), arguments[0]));
+}
 
-//     channel_name = line.substr(pos, line.find(" ", pos) - pos);
-//     pos += channel_name.size() + 1;
-//     user_name = line.substr(pos, line.find(" ", pos) - pos);
-//     pos += user_name.size(); // + 1;
-//     msg_text = line.substr(pos, line.size());
+void    CommandPONG::execute(Client *client, std::vector<std::string> arguments)
+{
+    if (arguments.empty())
+    {
+        client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "PONG"));
+        return ;
+    }
+    client->sending(RPL_PING(client->getPrefix(), arguments[0]));
+}
 
-//     if (!channel_name.size() || !user_name.size())
-//     {
-//         SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-//     }
-//     else if (_channel.find(channel_name) == _channel.end())
-//     {
-//         SEND_ERR(it->first, channel_name, ERR_NOSUCHCHANNEL);
-//     }
-//     else
-//     {
-//         if (!(_channel[channel_name].isAdmin(&it->second)))
-//         {
-//             SEND_MSG(it->first, ERR_CHANOPRIVSNEEDED);
-//             return;
-//         }
-//         else if (_user.find(user_name) == _user.end())
-//         {
-//             SEND_MSG(it->first, ERR_NOSUCHNICK);
-//             return;
-//         }
-//         else if (!_channel[channel_name].search_user(&_client.at(_user[user_name])))
-//         {
-//             SEND_MSG(it->first, ERR_USERNOTINCHANNEL);
-//         }
-//         else
-//         {
-//             if (!msg_text.empty())
-//             {
-//                 if (msg_text[0] != ':')
-//                 {
-//                     SEND_MSG(it->first, SINTAX_ERROR);
-//                     return ;
-//                 }
-//                 msg_text.erase(msg_text.begin());
-//                 SEND_STRING(_user[user_name], msg_text);
-//             }
-//             _channel[channel_name].leave_chanel(&_client.at(_user[user_name]));
-//         }
-//     }
-// }
+void    CommandJOIN::execute(Client *client, std::vector<std::string> arguments)
+{
+    if (arguments.empty())
+    {
+        client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "JOIN"));
+        return ;
+    }
+    std::string channel_name = arguments[0];
+    std::string password = arguments.size() > 1 ? arguments[1] : "";
+    if (channel_name[0] != '#' && channel_name[0] != '&')
+    {
+        client->reply(ERR_BADCHANMASK(client->getNick(), channel_name));
+        return ;
+    }
+    Channel* channel = _server->getChannel(channel_name);
+    if (!channel)
+        channel = _server->addChannel(channel_name);
+    channel->add_user(client);
+    // SEND_CHANEL(it->first, word, JOIN_CHANNEL);
+}
 
-// void    Operators::operator_LUSERS(iterator &it, const std::string& line)
-// {
-//     (void)it; (void)line;
-//     // std::string msg = (it->second.getNick() + " " + std::to_string(_user.size()));
-//     // SEND_ERR(it->first, msg, RPL_LUSEROP);
-// }
+void    CommandPART::execute(Client *client, std::vector<std::string> arguments)
+{
+    if (arguments.empty())
+    {
+        client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "PART"));
+        return ;
+    }
+    std::string channel_name = arguments[0];
 
-// void    Operators::operator_CAP(iterator &it, const std::string& line)
-// {
-//     (void)it; (void)line;
-// //     std::string sub;
+    Channel* channel = _server->getChannel(channel_name);
+    if (!channel)
+    {
+        client->reply(ERR_NOSUCHCHANNEL(client->getNick(), channel_name));
+        return ;
+    }
+    else if (!channel->isAvelabel(client))
+    {
+        client->reply(ERR_NOTONCHANNEL(client->getNick(), channel_name));
+        return ;
+    }
+    channel->leave_chanel(client);
+    // SEND_CHANEL(it->first, word, LEAVE_CHANNEL);
+}
 
-// //     sub = line.substr(0, line.find(" "));
-// //     if (sub == "LS")
-// //     {
-// //         ;// send(it->first, "002 [admin]\r\n", 11, 0);
-// //         // SEND_CLIENT(it->first, "SERVER", "CAP", "*", "multi-prefix sasl");
-// //     }
-// }
+void    CommandKICK::execute(Client *client, std::vector<std::string> arguments)
+{
+    if (arguments.empty() || arguments.size() < 2)
+    {
+        client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "KICK"));
+        return ;
+    }
+    std::string channel_name = arguments[0];
 
-// void    Operators::operator_PING(iterator &it, const std::string& line)
-// {
-//     std::string text;
+    Channel* channel = _server->getChannel(channel_name);
+    if (!channel)
+    {
+        client->reply(ERR_NOSUCHCHANNEL(client->getNick(), channel_name));
+        return ;
+    }
+    else if (!channel->isAvelabel(client))
+    {
+        client->reply(ERR_NOTONCHANNEL(client->getNick(), channel_name));
+        return ;
+    }
+    if (!(channel->isAdmin(client)))
+    {
+        client->reply(ERR_CHANOPRIVSNEEDED(client->getNick(), channel_name));
+        return ;
+    }
+    std::string user_name = arguments[1];
 
-//     text = line.substr(0, line.find(" "));
-//     if (text[0] != ':')
-//     {
-//         SEND_MSG(it->first, SINTAX_ERROR);
-//         return ;
-//     }
-//     else
-//     {
-//         SEND_CLIENT(it->first, "SERVER", "PING", " ", line.substr(1, text.size()).c_str());
-//     }
-// }
-
-// void    Operators::operator_PONG(iterator &it, const std::string& line)
-// {
-//     std::string text;
-
-//     text = line.substr(0, line.find(" "));
-//     if (text[0] != ':')
-//     {
-//         SEND_MSG(it->first, SINTAX_ERROR);
-//         return ;
-//     }
-//     else
-//     {
-//         SEND_CLIENT(it->first, "SERVER", "PONG", " ", line.substr(1, text.size()).c_str());
-//     }
-// }
-
-// void    Operators::operator_PART(iterator &it, const std::string& line)
-// {
-//     std::string word;
-
-//     word = line.substr(0, line.find(" "));
-//     if (!word.size())
-//     {
-//         SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-//     }
-//     else if (_channel.find(word) == _channel.end())
-//     {
-//         SEND_ERR(it->first, word, ERR_NOSUCHCHANNEL);
-//     }
-//     else if (!_channel[word].isAvelabel(&it->second))
-//     {
-//         SEND_ERR(it->first, word, ERR_NOTONCHANNEL);
-//     }
-//     else
-//     {
-//         _channel[word].leave_chanel(&it->second);
-//         SEND_CHANEL(it->first, word, LEAVE_CHANNEL);
-//     }
-// }
-
-// void    Operators::operator_JOIN(iterator &it, const std::string& line)
-// {
-//     std::string word;
-
-//     word = line.substr(0, line.find(" "));
-//     if (!word.size())
-//     {
-//         SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-//     }
-//     else if (word[0] != '#')
-//     {
-//         SEND_ERR(it->first, word, ERR_BADCHANMASK);
-//     }
-//     else
-//     {
-//         if (_channel.find(word) == _channel.end())
-//             _channel.insert(std::make_pair(word, Channel(word)));
-//         _channel[word].add_user(&it->second);
-//         SEND_CHANEL(it->first, word, JOIN_CHANNEL);
-//     }
-// }
+    Client* user = _server->getClient(user_name);
+    if (!user || !channel->search_user(user))
+    {
+        client->reply(ERR_USERNOTINCHANNEL(client->getNick(), user_name, channel_name));
+        return ;
+    }
+    std::string reason = "No reason specified.";
+    if (arguments.size() > 2)
+    {
+        reason = arguments[2].substr(arguments[2][0] == ':' ? 1 : 0);
+        for (size_t i = 3; i < arguments.size(); ++i)
+            reason.append(" " + arguments[i]);
+    }
+    user->sending(RPL_KICK(client->getPrefix(), channel_name, user_name, reason));
+    channel->leave_chanel(user);
+}

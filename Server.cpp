@@ -28,7 +28,7 @@ Client* Server::getClient(const std::string& nickname)
 {
     try
     {
-        return _client[_user.at(nickname)];
+        return _client.at(_user.at(nickname));
     }
     catch(const std::exception& e)
     {
@@ -40,12 +40,20 @@ Channel*    Server::getChannel(const std::string& name)
 {
     try
     {
-        return _channel[name];
+        return _channel.at(name);
     }
     catch(const std::exception& e)
     {
         return NULL;
     }
+}
+
+Channel*    Server::addChannel(const std::string& name)
+{
+    Channel* newChannel = new Channel(name);
+
+    _channel.insert(std::make_pair(name, newChannel));
+    return newChannel;
 }
 
 void    Server::setUser(const std::string& nickname, int fd)
@@ -152,6 +160,7 @@ bool    Server::get_buffer(iterator& it)
         {
             close(it->first);
             _user.erase(it->second->getNick());
+            delete it->second;
             _client.erase(it->first);
             std::cout << "Offline user: " << it->first << std::endl;
             std::cout << "Users online: " << _client.size() << std::endl;

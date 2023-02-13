@@ -69,3 +69,57 @@ public:
 
     void    execute(Client *client, std::vector<std::string> arguments);
 };
+
+class CommandCAP: public Command
+{
+public:
+    CommandCAP(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandCAP(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};
+
+class CommandPING: public Command
+{
+public:
+    CommandPING(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandPING(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};
+
+class CommandPONG: public Command
+{
+public:
+    CommandPONG(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandPONG(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};
+
+class CommandJOIN: public Command
+{
+public:
+    CommandJOIN(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandJOIN(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};
+
+class CommandPART: public Command
+{
+public:
+    CommandPART(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandPART(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};
+
+class CommandKICK: public Command
+{
+public:
+    CommandKICK(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandKICK(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};

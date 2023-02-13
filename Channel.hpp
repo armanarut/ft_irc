@@ -10,7 +10,7 @@ class Channel
 public:
 
     Channel();
-    Channel(std::string& name);
+    Channel(const std::string& name);
     ~Channel();
 
     void    add_user(Client* client);

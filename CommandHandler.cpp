@@ -7,13 +7,12 @@
     _commands["USER"] = new CommandUSER(_server, false);
 	// _commands["QUIT"] = new QuitCommand(_server, false);
 
-    // _commands["PING"] = new CommandPING(_server);
-    // _commands["PONG"] = new CommandPONG(_server);
-    // _commands["JOIN"] = new CommandJOIN(_server);
-    // _commands["PART"] = new CommandPART(_server);
-    // _commands["KICK"] = new CommandKICK(_server);
-    // _commands["LUSERS"] = new CommandLUSERS(_server);
-    // _commands["CAP"] = new CommandCAP(_server);
+    _commands["CAP"] = new CommandCAP(_server);
+    _commands["PING"] = new CommandPING(_server);
+    _commands["PONG"] = new CommandPONG(_server);
+    _commands["JOIN"] = new CommandJOIN(_server);
+    _commands["PART"] = new CommandPART(_server);
+    _commands["KICK"] = new CommandKICK(_server);
 
     _commands["PRIVMSG"] = new CommandPRIVMSG(_server);
     _commands["NOTICE"] = new CommandNOTICE(_server);
