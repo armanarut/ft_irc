@@ -38,12 +38,15 @@ void    Bot::run(){
     int n = 0;
     std::string in_text;
     char buffer[BUF_SIZE];
+    int val = 0;
     while (true)
     {
         // std::cout << m_fd << std::endl;// cheking
         n++;
         memset(buffer, 0, BUF_SIZE);
-        recv(m_fd, buffer, BUF_SIZE, 0);
+        val = recv(m_fd, buffer, BUF_SIZE, 0);
+        if (val == 0)
+            break; 
         in_text="";
         in_text.append(buffer);
         if (!in_text.empty()){
@@ -55,6 +58,7 @@ void    Bot::run(){
             sending("PING " + m_nick + " " + m_host);
             n = 0;
         }
+
 
     }
 }

@@ -45,6 +45,6 @@ fclean: clean
 re: fclean all
 
 start: all
-	./$(NAME) localhost 6667 123 mish
+	./$(NAME) localhost 6667 123 gor
 
 .PHONY:		all clean fclean re run bot
