@@ -16,6 +16,7 @@
 #define BUF_SIZE 1024
 
 std::string my_to_string(int num);
+void  toUpperCase(std::string& str);
 
 class Bot {
 
@@ -47,5 +48,6 @@ class Bot {
         std::string parsing_text(std::string in_text);;
         std::string get_time(void);
 };
+
 
 // ftp server sintax : /DCC send <nickName> :

@@ -39,6 +39,7 @@ void    Bot::run(){
     char buffer[BUF_SIZE];
     while (true)
     {
+        std::cout << m_fd << std::endl;// cheking
         memset(buffer, 0, BUF_SIZE);
         recv(m_fd, buffer, BUF_SIZE, 0);
         in_text="";
@@ -76,7 +77,8 @@ std::string Bot::parsing_text(std::string in_text){
         return "";
     m_user = in_text.substr(1, in_text.find("!")-1);
     std::string msg = in_text.substr(in_text.find(":", 1) + 1, in_text.size());
-    // std::cout << "user :" + m_user + " / comm :" + msg  << std::endl; // cheking
+    toUpperCase(msg);
+    std::cout << "user :" + m_user + " / comm :" + msg  << std::endl; // cheking
     return (msg);
 }
 
@@ -121,6 +123,11 @@ std::string my_to_string(int num)
     stream << num;
     stream >> str;
     return str;
+}
+
+void  toUpperCase(std::string& str)
+{
+    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 }
 
 int main(int ac,char **av)
