@@ -33,6 +33,7 @@ public:
     std::string getPass();
     Client* getClient(const std::string& nickname);
     Channel* getChannel(const std::string& name);
+    Channel* addChannel(const std::string& name);
     void    setUser(const std::string& nickname, int fd);
 
 private:

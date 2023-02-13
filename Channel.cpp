@@ -2,7 +2,7 @@
 
     Channel::Channel(){}
 
-    Channel::Channel(std::string& name)
+    Channel::Channel(const std::string& name)
     :name_(name) {}
 
     Channel::~Channel() {}
