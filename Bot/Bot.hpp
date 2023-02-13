@@ -12,6 +12,9 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <netdb.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <arpa/inet.h>
 
 #define BUF_SIZE 1024
 

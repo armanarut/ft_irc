@@ -16,7 +16,8 @@ void    Bot::start_bot() {
     memset (&mysock, 0, sizeof (mysock)); // Инициализировать структуру
     mysock.sin_family = AF_INET; // Установить семейство адресов
     mysock.sin_port = htons(m_port); // Установить порт
-    // mysock.sin_addr = INADDR_ANY; // Установить адрес
+    mysock.sin_addr.s_addr = inet_addr(m_host);; // Установить адрес
+    // std::cout  <<  mysock.sin_addr.s_addr << std::endl; // Cheking
     
         if (connect(m_fd, (struct sockaddr*)&mysock, sizeof (mysock)) != -1){
             std::cout << "Server connected!" << std::endl;
