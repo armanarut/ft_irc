@@ -55,5 +55,5 @@
 		for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
 			if (*it == client)
 				return true;
-		return true;
+		return false;
 	}
