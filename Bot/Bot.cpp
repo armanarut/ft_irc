@@ -11,7 +11,7 @@ Bot::~Bot(){}
 void    Bot::start_bot() {
     struct sockaddr_in mysock;
 
-    m_fd = socket(AF_INET,SOCK_STREAM,0); // Получить ФД
+    m_fd = socket(AF_INET, SOCK_STREAM, 0); // Получить ФД
     getnameinfo((struct sockaddr*)&mysock, sizeof(mysock), m_host, NI_MAXHOST, NULL, 0, NI_NUMERICSERV);
     memset (&mysock, 0, sizeof (mysock)); // Инициализировать структуру
     mysock.sin_family = AF_INET; // Установить семейство адресов
@@ -35,11 +35,13 @@ void    Bot::run(){
     sending("PASS " + m_pass);
     sending("USER BOT" + m_nick + " " + my_to_string(m_port) + " " + m_host + " :Noname");
 
+    int n = 0;
     std::string in_text;
     char buffer[BUF_SIZE];
     while (true)
     {
-        std::cout << m_fd << std::endl;// cheking
+        // std::cout << m_fd << std::endl;// cheking
+        n++;
         memset(buffer, 0, BUF_SIZE);
         recv(m_fd, buffer, BUF_SIZE, 0);
         in_text="";
@@ -49,6 +51,11 @@ void    Bot::run(){
             if (check_command(in_text))
                 break;  
         }
+        if (n > 50000000){
+            sending("PING " + m_nick + " " + m_host);
+            n = 0;
+        }
+
     }
 }
 
