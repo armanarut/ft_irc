@@ -57,3 +57,12 @@
 				return true;
 		return false;
 	}
+
+    void Channel::next_client_set_admin()
+    {
+        std::vector<Client*>::iterator it = users_.begin();
+        ++it;
+        if (it == users_.end())
+            return ;
+        admin_ = *it;
+    }

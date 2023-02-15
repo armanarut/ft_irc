@@ -58,6 +58,8 @@ private:
 /****************[create new client]****************/
     void    new_client();
 
+    void    delete_user(iterator& it);
+
     Server();
     Server& operator=(const Server& other);
 };

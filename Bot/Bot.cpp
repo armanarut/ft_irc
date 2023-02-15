@@ -66,20 +66,30 @@ void    Bot::run(){
 
 int Bot::check_command(std::string in_text){
     std::string command = parsing_text(in_text);
+    std::string msg;
 
     if (m_user.empty())
-        ;//std::cout << "User not identifit" << std::endl;
+        return 0;//std::cout << "User not identifit" << std::endl;
     else if (command.empty())
         ;
     else if (command == "TIME\r\n")
-        sending("PRIVMSG " + m_user + " " + get_time());
+        msg = get_time();
     else if (command == "HELLO\r\n")
-        sending("PRIVMSG " + m_user + " Hello! I'm " + m_nick + "!" );
-    else if (command == "EXIT\r\n")
-        return 1;
+        msg = " Hello! I'm " + m_nick + "!";
+    else if (command == "HELP\r\n")
+        msg = help_command();
     else
-        sending("PRIVMSG " + m_user + " Anhaskanali comanda");
+        msg = " Anhaskanali hramana (xntrum em chisht grek)!";
+   
+    std::cout << ("PRIVMSG " + m_user + msg) << std::endl; // cheking
+    sending("PRIVMSG " + m_user + msg);
+    
     return 0;
+}
+
+std::string Bot::help_command(){
+    std::string str = " TIME - show time and date. HELLO - Hello! I'm bot!. HELP - command list.";
+    return str;
 }
 
 std::string Bot::parsing_text(std::string in_text){
@@ -90,7 +100,7 @@ std::string Bot::parsing_text(std::string in_text){
     m_user = in_text.substr(1, in_text.find("!")-1);
     std::string msg = in_text.substr(in_text.find(":", 1) + 1, in_text.size());
     toUpperCase(msg);
-    std::cout << "user :" + m_user + " / comm :" + msg  << std::endl; // cheking
+    std::cout << "user :" + m_user + " / command :" + msg; // cheking
     return (msg);
 }
 
@@ -114,7 +124,7 @@ std::string Bot::get_time(void)
         data_time.push_back(temp);
     }
     data_time[4].resize(4);
-    temp = "DATE : /" + data_time[0] + "/ " + data_time[2] + " ";
+    temp = " DATE : /" + data_time[0] + "/ " + data_time[2] + " ";
     temp += data_time[1] + " " + data_time[4] + "\n";
     temp += "TIME : " + data_time[3];
     return temp;
@@ -139,13 +149,14 @@ std::string my_to_string(int num)
 
 void  toUpperCase(std::string& str)
 {
-    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+    for(size_t i = 0 ; i < str.size(); ++i) 
+    { str[i] = std::toupper(str[i]); }
 }
 
 int main(int ac,char **av)
 {
     if (ac != 5) {
-        std::cout << " [host] <port> password nick" << std::endl;
+        std::cout << " /host/ /port/ /password/ /nick/" << std::endl;
         return 0;
     }
     Bot bot(av);

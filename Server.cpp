@@ -159,9 +159,7 @@ bool    Server::get_buffer(iterator& it)
         if (valread == 0)
         {
             close(it->first);
-            _user.erase(it->second->getNick());
-            delete it->second;
-            _client.erase(it->first);
+            delete_user(it);
             std::cout << "Offline user: " << it->first << std::endl;
             std::cout << "Users online: " << _client.size() << std::endl;
             return valread;
@@ -188,4 +186,19 @@ void    Server::new_client()
     _client.insert(std::make_pair(new_socket, new Client(new_socket, hostname)));
     std::cout << "New user: " << new_socket << std::endl;
     std::cout << "Users online: " << _client.size() << std::endl;
+}
+
+void    Server::delete_user(iterator& it){
+    std::map<std::string, Channel*>::iterator ch;
+    for (ch = _channel.begin(); ch != _channel.end(); ++ch)
+    {
+        if (ch->second->isAdmin(it->second))
+        { 
+		    std::cout <<  it->second->getNick() << " :Admin by channel " << ch->first << std::endl;
+            ch->second->next_client_set_admin();
+        }
+    }
+    _user.erase(it->second->getNick());
+    delete it->second;
+    _client.erase(it->first);
 }

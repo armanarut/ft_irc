@@ -50,6 +50,7 @@ class Bot {
         int         check_command(std::string in_text);;
         std::string parsing_text(std::string in_text);;
         std::string get_time(void);
+        std::string help_command();
 };
 
 
