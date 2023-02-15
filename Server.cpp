@@ -121,10 +121,13 @@ void    Server::start()
             for (iterator it = _client.begin(); it != _client.end(); )
             {
                 /*************[writing]*************/
+                std::string com = it->second->buffer;
+                bool quit = (com == "QUIT\r\n");
                 if (FD_ISSET(it->first, &wr))
                 {
                     // cout << "writing..." << endl;
-                    bool quit = (it->second->buffer.find("QUIT") != std::string::npos);
+                    // std::cout << it->second->buffer << std::endl;
+                    std::cout << com << std::endl;
                     FD_CLR(it->first, &wr);
                     while (!(it->second->buffer).empty()){
                         _commandHandler->invoke(it->second);
