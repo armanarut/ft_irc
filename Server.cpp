@@ -118,16 +118,27 @@ void    Server::start()
         else if (r)
         {
             // cout << "continue..." << endl;
-            for (iterator it = _client.begin(); it != _client.end(); ++it)
+            for (iterator it = _client.begin(); it != _client.end(); )
             {
                 /*************[writing]*************/
                 if (FD_ISSET(it->first, &wr))
                 {
                     // cout << "writing..." << endl;
+                    bool quit = (it->second->buffer.find("QUIT") != std::string::npos);
                     FD_CLR(it->first, &wr);
-                    while (!(it->second->buffer).empty())
+                    while (!(it->second->buffer).empty()){
                         _commandHandler->invoke(it->second);
-                    it->second->buffer.clear();
+                        if (quit) break;
+                    }
+                    
+                    if (quit) {
+                        delete_user(it->second);
+                        it = _client.end();
+                    }
+                    else {
+                        it->second->buffer.clear();
+                        ++it;
+                    }
                 }
                 /*************[reading]*************/
                 else if (FD_ISSET(it->first, &rd))
@@ -158,8 +169,8 @@ bool    Server::get_buffer(iterator& it)
     {
         if (valread == 0)
         {
-            close(it->first);
-            delete_user(it);
+            // close(it->first);
+            delete_user(it->second);
             std::cout << "Offline user: " << it->first << std::endl;
             std::cout << "Users online: " << _client.size() << std::endl;
             return valread;
@@ -188,17 +199,36 @@ void    Server::new_client()
     std::cout << "Users online: " << _client.size() << std::endl;
 }
 
-void    Server::delete_user(iterator& it){
+void    Server::delete_user(Client* del_user){
     std::map<std::string, Channel*>::iterator ch;
     for (ch = _channel.begin(); ch != _channel.end(); ++ch)
     {
-        if (ch->second->isAdmin(it->second))
+        if (ch->second->isAdmin(del_user))
         { 
-		    std::cout <<  it->second->getNick() << " :Admin by channel " << ch->first << std::endl;
+		    std::cout <<  del_user->getNick() << " :Admin by channel " << ch->first << std::endl;
             ch->second->next_client_set_admin();
         }
     }
-    _user.erase(it->second->getNick());
-    delete it->second;
-    _client.erase(it->first);
+    int fd = -1;
+    for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
+    {
+        if (it->second == del_user)
+        {
+            // std::cout <<  del_user->getNick() << " " << it->first << std::endl; // checking
+            // close(it->first);
+            fd = it->first;
+            _client.erase(it);
+            break;
+        }    
+    }
+    _user.erase(del_user->getNick());
+    std::string msg = del_user->getPrefix() + " QUIT :Quit: Bye for now!";
+    del_user->sending(msg);
+    close (fd);
+    delete del_user;
+    
+    // :dan-!d@localhost QUIT :Quit: Bye for now!
+//     // (void)arguments;
+//     
+    
 }

@@ -264,3 +264,14 @@ void    CommandKICK::execute(Client *client, std::vector<std::string> arguments)
     user->sending(RPL_KICK(client->getPrefix(), channel_name, user_name, reason));
     channel->leave_chanel(user);
 }
+
+void    CommandQUIT::execute(Client *client, std::vector<std::string> arguments)
+{
+    // :dan-!d@localhost QUIT :Quit: Bye for now!
+    (void)arguments;
+    (void) client;
+    // std::string msg = client->getPrefix() + " QUIT :" + arguments[0];
+    // client->sending(msg);
+    // _server->delete_user(client);
+    // client = NULL;
+}

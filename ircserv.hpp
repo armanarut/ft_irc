@@ -25,6 +25,7 @@
 #define RPL_MSG(prefix, command, target, massage)   ":" + prefix + " " + command + " " + target + " :" + massage
 #define RPL_KICK(prefix, channel, target, reason)   ":" + prefix + " KICK " + channel + " " + target + " :" + reason
 #define RPL_PING(prefix, massage)                   ":" + prefix + " PONG :" + massage
+#define RPL_QUIT(massage)                   "ERROR :" +  massage
 
 #define SINTAX_ERROR   " :Sintax error"
 #define JOIN_CHANNEL    "You joined to channel: "

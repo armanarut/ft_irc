@@ -5,7 +5,7 @@
     _commands["PASS"] = new CommandPASS(_server, false);
     _commands["NICK"] = new CommandNICK(_server, false);
     _commands["USER"] = new CommandUSER(_server, false);
-	// _commands["QUIT"] = new QuitCommand(_server, false);
+	_commands["QUIT"] = new CommandQUIT(_server, false);
 
     _commands["CAP"] = new CommandCAP(_server);
     _commands["PING"] = new CommandPING(_server);
@@ -165,6 +165,8 @@
         //         SEND_ERR(it->first, word, ERR_UNKNOWNCOMMAND);
         //     }
         // }
+
         if (client->buffer.size())
             invoke(client);
+        // std::cout << "check user deleted.\n"; // check
     }
