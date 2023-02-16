@@ -271,6 +271,7 @@ void    CommandQUIT::execute(Client *client, std::vector<std::string> arguments)
     (void)arguments;
     // (void) client;
     client->quit = true;
-    std::string msg = client->getPrefix() + " 001 " + client->getNick() + " QUIT :Bye for now!";
+    std::string port = std::to_string(_server->getPort());
+    std::string msg = client->getPrefix() + " " + port +" " + client->getNick() + " QUIT :Bye for now!";
     client->sending(msg);
 }

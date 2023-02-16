@@ -37,6 +37,7 @@ public:
     void    setUser(const std::string& nickname, int fd);
     void    delete_user(Client*);
     void    checkClientFd();
+    short   getPort() const;
 
 private:
     short       _port;

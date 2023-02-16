@@ -19,6 +19,11 @@ Server::~Server()
     close(server_fd);
 }
 
+short   Server::getPort() const
+{
+    return _port;
+}
+
 std::string Server::getPass()
 {
     return _pass;
@@ -163,7 +168,7 @@ bool    Server::get_buffer(iterator& it)
     while ((memset(buffer, 0, BUF_SIZE), \
             valread = recv(it->first, buffer, BUF_SIZE, 0)) != -1)
     {
-        if (it->second->quit || valread == 0) ////////<----------------------------------
+        if (valread == 0) ////////<----------------------------------
         {
             // std::cout << "Offline 3333333333333 user: " << it->first << std::endl;
             close(it->first);
@@ -203,10 +208,9 @@ void    Server::delete_user(Client* del_user){
     std::map<std::string, Channel*>::iterator ch;
     for (ch = _channel.begin(); ch != _channel.end(); ++ch)
     {
-        if (ch->second->isAdmin(del_user))
-        { 
-		    std::cout <<  del_user->getNick() << " :Admin by channel " << ch->first << std::endl;
-            ch->second->next_client_set_admin();
+        if (ch->second->isAvelabel(del_user))
+        {
+            ch->second->leave_chanel(del_user);
         }
     }
     for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
