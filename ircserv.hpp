@@ -28,8 +28,6 @@
 #define RPL_QUIT(massage)                   "ERROR :" +  massage
 
 #define SINTAX_ERROR   " :Sintax error"
-#define JOIN_CHANNEL    "You joined to channel: "
-#define LEAVE_CHANNEL    "You leave the channel: "
 
 #define BUF_SIZE 1024
 

@@ -62,8 +62,6 @@
 				client->reply(ERR_NOTREGISTERED(client->getNick()));
 				return;
             }
-
-
             command->execute(client, arguments);
 		}
 		catch (const std::out_of_range &e)

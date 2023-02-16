@@ -194,7 +194,6 @@ void    CommandJOIN::execute(Client *client, std::vector<std::string> arguments)
     if (!channel)
         channel = _server->addChannel(channel_name);
     channel->add_user(client);
-    // SEND_CHANEL(it->first, word, JOIN_CHANNEL);
 }
 
 void    CommandPART::execute(Client *client, std::vector<std::string> arguments)
@@ -218,7 +217,6 @@ void    CommandPART::execute(Client *client, std::vector<std::string> arguments)
         return ;
     }
     channel->leave_chanel(client);
-    // SEND_CHANEL(it->first, word, LEAVE_CHANNEL);
 }
 
 void    CommandKICK::execute(Client *client, std::vector<std::string> arguments)

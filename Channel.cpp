@@ -10,6 +10,7 @@ Channel::~Channel() {}
 void    Channel::add_user(Client* client)
 {
     users_.push_back(client);
+    client->sending(RPL_MSG(client->getPrefix(), "", name_, "You have joined the channel"));
     this->sending(client, "join to channel", "");
     this->newAdmin();
 }
