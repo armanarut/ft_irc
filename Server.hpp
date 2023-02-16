@@ -33,9 +33,9 @@ public:
     std::string getPass();
     Client* getClient(const std::string& nickname);
     Channel* getChannel(const std::string& name);
-    Channel* addChannel(const std::string& name);
+    Channel* addChannel(const std::string& name, const std::string& pass);
     void    setUser(const std::string& nickname, int fd);
-    void    delete_user(Client*);
+    void    delete_user(iterator& it);
     void    checkClientFd();
     short   getPort() const;
 
