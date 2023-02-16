@@ -61,6 +61,8 @@
     void Channel::next_client_set_admin()
     {
         std::vector<Client*>::iterator it = users_.begin();
+         if (it == users_.end())
+            return ;
         ++it;
         if (it == users_.end())
             return ;

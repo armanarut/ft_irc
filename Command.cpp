@@ -269,9 +269,8 @@ void    CommandQUIT::execute(Client *client, std::vector<std::string> arguments)
 {
     // :dan-!d@localhost QUIT :Quit: Bye for now!
     (void)arguments;
-    (void) client;
-    // std::string msg = client->getPrefix() + " QUIT :" + arguments[0];
-    // client->sending(msg);
-    // _server->delete_user(client);
-    // client = NULL;
+    // (void) client;
+    client->quit = true;
+    std::string msg = client->getPrefix() + " 001 " + client->getNick() + " QUIT :Bye for now!";
+    client->sending(msg);
 }

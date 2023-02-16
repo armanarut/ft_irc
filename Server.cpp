@@ -118,35 +118,28 @@ void    Server::start()
         else if (r)
         {
             // cout << "continue..." << endl;
-            for (iterator it = _client.begin(); it != _client.end(); )
+            for (iterator it = _client.begin(); it != _client.end(); ++it)
             {
                 /*************[writing]*************/
-                std::string com = it->second->buffer;
-                bool quit = (com == "QUIT\r\n");
-                if (FD_ISSET(it->first, &wr))
+                if (FD_ISSET(it->first, &wr)) ///<---------------------------------
                 {
                     // cout << "writing..." << endl;
-                    // std::cout << it->second->buffer << std::endl;
-                    std::cout << com << std::endl;
                     FD_CLR(it->first, &wr);
-                    while (!(it->second->buffer).empty()){
+                    while (!(it->second->buffer).empty())
                         _commandHandler->invoke(it->second);
-                        if (quit) break;
-                    }
                     
-                    if (quit) {
+                    it->second->buffer.clear();
+                    if ( it->second->quit) {
+                        close(it->first);
                         delete_user(it->second);
-                        it = _client.end();
-                    }
-                    else {
-                        it->second->buffer.clear();
-                        ++it;
-                    }
+                        delete it->second;
+                        break;
+                    }     
                 }
                 /*************[reading]*************/
                 else if (FD_ISSET(it->first, &rd))
                 {
-                    // cout << "reading client: " << it->first << endl;
+                    // std::cout << "client quit " << it->second->quit << std::endl;
                     FD_CLR(it->first, &rd);
                     if (!get_buffer(it))
                         break ;
@@ -170,12 +163,14 @@ bool    Server::get_buffer(iterator& it)
     while ((memset(buffer, 0, BUF_SIZE), \
             valread = recv(it->first, buffer, BUF_SIZE, 0)) != -1)
     {
-        if (valread == 0)
+        if (it->second->quit || valread == 0) ////////<----------------------------------
         {
-            // close(it->first);
+            // std::cout << "Offline 3333333333333 user: " << it->first << std::endl;
+            close(it->first);
             delete_user(it->second);
             std::cout << "Offline user: " << it->first << std::endl;
             std::cout << "Users online: " << _client.size() << std::endl;
+            delete it->second;
             return valread;
         }
         it->second->buffer.append(buffer);
@@ -197,7 +192,9 @@ void    Server::new_client()
     char hostname[NI_MAXHOST];
 
     getnameinfo((struct sockaddr*)&client_address, sizeof(client_address), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV);
-    _client.insert(std::make_pair(new_socket, new Client(new_socket, hostname)));
+    Client* n_client = new Client(new_socket, hostname);
+    n_client->quit = false;
+    _client.insert(std::make_pair(new_socket, n_client));
     std::cout << "New user: " << new_socket << std::endl;
     std::cout << "Users online: " << _client.size() << std::endl;
 }
@@ -212,26 +209,28 @@ void    Server::delete_user(Client* del_user){
             ch->second->next_client_set_admin();
         }
     }
-    int fd = -1;
     for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
     {
         if (it->second == del_user)
         {
             // std::cout <<  del_user->getNick() << " " << it->first << std::endl; // checking
-            // close(it->first);
-            fd = it->first;
             _client.erase(it);
             break;
         }    
     }
     _user.erase(del_user->getNick());
-    std::string msg = del_user->getPrefix() + " QUIT :Quit: Bye for now!";
-    del_user->sending(msg);
-    close (fd);
-    delete del_user;
-    
-    // :dan-!d@localhost QUIT :Quit: Bye for now!
-//     // (void)arguments;
-//     
-    
+    // :dan-!d@localhost QUIT :Quit: Bye for now!    
+}
+
+void    Server::checkClientFd()
+{
+     for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
+    {
+        if (it->second->quit)
+        {
+            close (it->first);
+            delete_user(it->second);
+            it = _client.begin();
+        }
+    }
 }

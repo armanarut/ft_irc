@@ -36,6 +36,7 @@ public:
     Channel* addChannel(const std::string& name);
     void    setUser(const std::string& nickname, int fd);
     void    delete_user(Client*);
+    void    checkClientFd();
 
 private:
     short       _port;

@@ -58,6 +58,11 @@ public:
 		return (fd_);
 	}
 
+	// void		setFd(int fd)
+	// {
+	// 	fd_= fd;
+	// }
+
 	void	registering()
 	{
 		if (passwd && !username.empty() && !realname.empty() && !nickname.empty())
@@ -101,7 +106,7 @@ public:
 	}
 
     std::string		buffer;
-
+	bool			quit;
 private:
 	std::string		nickname;
 	std::string		username;
@@ -110,4 +115,5 @@ private:
 	bool			registered;
 	bool			passwd;
 	int				fd_;
+	
 };
