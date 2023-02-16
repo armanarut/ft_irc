@@ -47,4 +47,4 @@ re: fclean all
 start: all
 	./$(NAME) 127.0.0.1 6667 123 gor
 
-.PHONY:		all clean fclean re run bot
+.PHONY:		all clean fclean re run start

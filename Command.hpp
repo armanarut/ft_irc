@@ -132,3 +132,21 @@ public:
 
     void    execute(Client *client, std::vector<std::string> arguments);
 };
+
+class CommandMODE: public Command
+{
+public:
+    CommandMODE(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandMODE(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};
+
+class CommandWHO: public Command
+{
+public:
+    CommandWHO(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandWHO(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};

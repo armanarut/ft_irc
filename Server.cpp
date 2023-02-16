@@ -53,9 +53,9 @@ Channel*    Server::getChannel(const std::string& name)
     }
 }
 
-Channel*    Server::addChannel(const std::string& name)
+Channel*    Server::addChannel(const std::string& name, const std::string& pass)
 {
-    Channel* newChannel = new Channel(name);
+    Channel* newChannel = new Channel(name, pass);
 
     _channel.insert(std::make_pair(name, newChannel));
     return newChannel;
@@ -132,14 +132,12 @@ void    Server::start()
                     FD_CLR(it->first, &wr);
                     while (!(it->second->buffer).empty())
                         _commandHandler->invoke(it->second);
-                    
+
                     it->second->buffer.clear();
                     if ( it->second->quit) {
-                        close(it->first);
-                        delete_user(it->second);
-                        delete it->second;
-                        break;
-                    }     
+                        delete_user(it);
+                        break ;
+                    }
                 }
                 /*************[reading]*************/
                 else if (FD_ISSET(it->first, &rd))
@@ -170,12 +168,7 @@ bool    Server::get_buffer(iterator& it)
     {
         if (valread == 0) ////////<----------------------------------
         {
-            // std::cout << "Offline 3333333333333 user: " << it->first << std::endl;
-            close(it->first);
-            delete_user(it->second);
-            std::cout << "Offline user: " << it->first << std::endl;
-            std::cout << "Users online: " << _client.size() << std::endl;
-            delete it->second;
+            delete_user(it);
             return valread;
         }
         it->second->buffer.append(buffer);
@@ -200,41 +193,33 @@ void    Server::new_client()
     Client* n_client = new Client(new_socket, hostname);
     n_client->quit = false;
     _client.insert(std::make_pair(new_socket, n_client));
-    std::cout << "New user: " << new_socket << std::endl;
+    std::cout << "New user: " << new_socket - server_fd << std::endl;
     std::cout << "Users online: " << _client.size() << std::endl;
 }
 
-void    Server::delete_user(Client* del_user){
-    std::map<std::string, Channel*>::iterator ch;
-    for (ch = _channel.begin(); ch != _channel.end(); ++ch)
-    {
-        if (ch->second->isAvelabel(del_user))
-        {
-            ch->second->leave_chanel(del_user);
-        }
-    }
-    for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
-    {
-        if (it->second == del_user)
-        {
-            // std::cout <<  del_user->getNick() << " " << it->first << std::endl; // checking
-            _client.erase(it);
-            break;
-        }    
-    }
-    _user.erase(del_user->getNick());
-    // :dan-!d@localhost QUIT :Quit: Bye for now!    
+void    Server::delete_user(iterator& it){
+
+    std::cout << "Offline user: " << it->first - server_fd << std::endl;
+
+    it->second->leaveChannel(0);
+
+    close(it->first);
+    _user.erase(it->second->getNick());
+
+    delete it->second;
+    _client.erase(it);
+    std::cout << "Users online: " << _client.size() << std::endl;
 }
 
-void    Server::checkClientFd()
-{
-     for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
-    {
-        if (it->second->quit)
-        {
-            close (it->first);
-            delete_user(it->second);
-            it = _client.begin();
-        }
-    }
-}
+// void    Server::checkClientFd()
+// {
+//      for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
+//     {
+//         if (it->second->quit)
+//         {
+//             close (it->first);
+//             delete_user(it->second);
+//             it = _client.begin();
+//         }
+//     }
+// }

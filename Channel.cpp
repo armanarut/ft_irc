@@ -2,21 +2,23 @@
 
 Channel::Channel(){}
 
-Channel::Channel(const std::string& name)
-:name_(name) {}
+Channel::Channel(const std::string& name, const std::string& key)
+:name_(name),
+k(key) {}
 
 Channel::~Channel() {}
 
-void    Channel::add_user(Client* client)
+void    Channel::join(Client* client)
 {
-    users_.push_back(client);
-    client->sending(RPL_MSG(client->getPrefix(), "", name_, "You have joined the channel"));
+    client->sending(RPL_JOIN(client->getPrefix(), name_));
     this->sending(client, "join to channel", "");
+    users_.push_back(client);
     this->newAdmin();
 }
 
-void    Channel::leave_chanel(Client* client)
+void    Channel::leave_channel(Client* client)
 {
+    client->sending(RPL_PART(client->getPrefix(), name_));
     this->sending(client, "leave the channel", "");
     for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
     {
@@ -67,4 +69,20 @@ void    Channel::newAdmin()
         admin_->sending(RPL_MSG(admin_->getPrefix(), "", name_, "you are the new admin"));
         this->sending(admin_, "is a new admin", "");
     }
+}
+
+std::string    Channel::getKey()
+{
+    return k;
+}
+
+void    Channel::setKey(const std::string& key)
+{
+    k = key;
+}
+
+void    Channel::whoReply(Client *client)
+{
+    for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
+        client->sending(RPL_WHOREPLY( name_, (*it)->getUser(), (*it)->getHost(), (*it)->getNick(), (*it)->getReal()));
 }

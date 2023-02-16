@@ -25,6 +25,7 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
 endif
 
 all:		$(NAME)
+
 run:		all
 			@echo "$(GREEN)runing prog $(NAME).$(DEF_COLOR)"
 			./$(NAME) $(RUN_ARGS)
@@ -43,7 +44,7 @@ fclean: clean
 
 re: fclean all
 
-server: fclean all
+server: all
 			./$(NAME) 6667 123
 client: 
 		nc localhost 6667

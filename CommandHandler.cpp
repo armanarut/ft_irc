@@ -13,6 +13,8 @@
     _commands["JOIN"] = new CommandJOIN(_server);
     _commands["PART"] = new CommandPART(_server);
     _commands["KICK"] = new CommandKICK(_server);
+    _commands["MODE"] = new CommandMODE(_server);
+    _commands["WHO"] = new CommandWHO(_server);
 
     _commands["PRIVMSG"] = new CommandPRIVMSG(_server);
     _commands["NOTICE"] = new CommandNOTICE(_server);

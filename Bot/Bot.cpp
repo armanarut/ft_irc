@@ -7,7 +7,7 @@ Bot::Bot(char **av) :
                     m_nick (av[4]) {}
 
 Bot::~Bot(){}
-    
+
 void    Bot::start_bot() {
     struct sockaddr_in mysock;
 
