@@ -19,11 +19,11 @@ public:
     bool    isAvelabel(Client* client);
     bool    isAdmin(Client* client);
 	bool    search_user(Client* client);
-    void    next_client_set_admin();
 
 private:
     std::string             name_;
     std::vector<Client*>    users_;
     Client*                 admin_;
 
+    void    newAdmin();
 };

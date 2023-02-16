@@ -123,3 +123,12 @@ public:
 
     void    execute(Client *client, std::vector<std::string> arguments);
 };
+
+class CommandQUIT: public Command
+{
+public:
+    CommandQUIT(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandQUIT(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};

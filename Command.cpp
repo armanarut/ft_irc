@@ -194,7 +194,6 @@ void    CommandJOIN::execute(Client *client, std::vector<std::string> arguments)
     if (!channel)
         channel = _server->addChannel(channel_name);
     channel->add_user(client);
-    // SEND_CHANEL(it->first, word, JOIN_CHANNEL);
 }
 
 void    CommandPART::execute(Client *client, std::vector<std::string> arguments)
@@ -218,7 +217,6 @@ void    CommandPART::execute(Client *client, std::vector<std::string> arguments)
         return ;
     }
     channel->leave_chanel(client);
-    // SEND_CHANEL(it->first, word, LEAVE_CHANNEL);
 }
 
 void    CommandKICK::execute(Client *client, std::vector<std::string> arguments)
@@ -263,4 +261,15 @@ void    CommandKICK::execute(Client *client, std::vector<std::string> arguments)
     }
     user->sending(RPL_KICK(client->getPrefix(), channel_name, user_name, reason));
     channel->leave_chanel(user);
+}
+
+void    CommandQUIT::execute(Client *client, std::vector<std::string> arguments)
+{
+    // :dan-!d@localhost QUIT :Quit: Bye for now!
+    (void)arguments;
+    // (void) client;
+    client->quit = true;
+    std::string port = std::to_string(_server->getPort());
+    std::string msg = client->getPrefix() + " " + port +" " + client->getNick() + " QUIT :Bye for now!";
+    client->sending(msg);
 }

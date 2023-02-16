@@ -19,6 +19,11 @@ Server::~Server()
     close(server_fd);
 }
 
+short   Server::getPort() const
+{
+    return _port;
+}
+
 std::string Server::getPass()
 {
     return _pass;
@@ -121,18 +126,25 @@ void    Server::start()
             for (iterator it = _client.begin(); it != _client.end(); ++it)
             {
                 /*************[writing]*************/
-                if (FD_ISSET(it->first, &wr))
+                if (FD_ISSET(it->first, &wr)) ///<---------------------------------
                 {
                     // cout << "writing..." << endl;
                     FD_CLR(it->first, &wr);
                     while (!(it->second->buffer).empty())
                         _commandHandler->invoke(it->second);
+                    
                     it->second->buffer.clear();
+                    if ( it->second->quit) {
+                        close(it->first);
+                        delete_user(it->second);
+                        delete it->second;
+                        break;
+                    }     
                 }
                 /*************[reading]*************/
                 else if (FD_ISSET(it->first, &rd))
                 {
-                    // cout << "reading client: " << it->first << endl;
+                    // std::cout << "client quit " << it->second->quit << std::endl;
                     FD_CLR(it->first, &rd);
                     if (!get_buffer(it))
                         break ;
@@ -156,12 +168,14 @@ bool    Server::get_buffer(iterator& it)
     while ((memset(buffer, 0, BUF_SIZE), \
             valread = recv(it->first, buffer, BUF_SIZE, 0)) != -1)
     {
-        if (valread == 0)
+        if (valread == 0) ////////<----------------------------------
         {
+            // std::cout << "Offline 3333333333333 user: " << it->first << std::endl;
             close(it->first);
-            delete_user(it);
+            delete_user(it->second);
             std::cout << "Offline user: " << it->first << std::endl;
             std::cout << "Users online: " << _client.size() << std::endl;
+            delete it->second;
             return valread;
         }
         it->second->buffer.append(buffer);
@@ -183,22 +197,44 @@ void    Server::new_client()
     char hostname[NI_MAXHOST];
 
     getnameinfo((struct sockaddr*)&client_address, sizeof(client_address), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV);
-    _client.insert(std::make_pair(new_socket, new Client(new_socket, hostname)));
+    Client* n_client = new Client(new_socket, hostname);
+    n_client->quit = false;
+    _client.insert(std::make_pair(new_socket, n_client));
     std::cout << "New user: " << new_socket << std::endl;
     std::cout << "Users online: " << _client.size() << std::endl;
 }
 
-void    Server::delete_user(iterator& it){
+void    Server::delete_user(Client* del_user){
     std::map<std::string, Channel*>::iterator ch;
     for (ch = _channel.begin(); ch != _channel.end(); ++ch)
     {
-        if (ch->second->isAdmin(it->second))
-        { 
-		    std::cout <<  it->second->getNick() << " :Admin by channel " << ch->first << std::endl;
-            ch->second->next_client_set_admin();
+        if (ch->second->isAvelabel(del_user))
+        {
+            ch->second->leave_chanel(del_user);
         }
     }
-    _user.erase(it->second->getNick());
-    delete it->second;
-    _client.erase(it->first);
+    for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
+    {
+        if (it->second == del_user)
+        {
+            // std::cout <<  del_user->getNick() << " " << it->first << std::endl; // checking
+            _client.erase(it);
+            break;
+        }    
+    }
+    _user.erase(del_user->getNick());
+    // :dan-!d@localhost QUIT :Quit: Bye for now!    
+}
+
+void    Server::checkClientFd()
+{
+     for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
+    {
+        if (it->second->quit)
+        {
+            close (it->first);
+            delete_user(it->second);
+            it = _client.begin();
+        }
+    }
 }
