@@ -4,7 +4,7 @@ CXX			= c++
 CXXFLAGS	= -Wall -Wextra -Werror -I.
 CPPFLAGS	= -std=c++98
 RM			= rm -rf
-SRCS		= Bot.cpp
+SRCS		= Bot.cpp utils.cpp
 OBJS		= $(SRCS:.cpp=.o)
 
 #Colors
@@ -45,6 +45,6 @@ fclean: clean
 re: fclean all
 
 start: all
-	./$(NAME) 127.0.0.1 6667 123 gor
+	./$(NAME) 228.0.0.1 12 123 gor
 
 .PHONY:		all clean fclean re run start
