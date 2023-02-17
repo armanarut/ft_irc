@@ -10,25 +10,48 @@ Channel::~Channel() {}
 
 void    Channel::join(Client* client)
 {
-    client->sending(RPL_JOIN(client->getPrefix(), name_));
-    this->sending(client, "join to channel", "");
     users_.push_back(client);
+    for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
+        (*it)->sending(RPL_JOIN(client->getPrefix(), name_));
+    this->newAdmin();
+    this->replyName(client);
+}
+
+void    Channel::replyName(Client* client)
+{
+    for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
+    {
+        if (*it == admin_)
+            client->sending(RPL_NAMREPLY(client->getNick(), name_, "@", (*it)->getNick()));
+        else
+            client->sending(RPL_NAMREPLY(client->getNick(), name_, "+", (*it)->getNick()));
+    }
+    client->sending(RPL_ENDOFNAMES(client->getNick(), name_));
+}
+
+void    Channel::part(Client* client)
+{
+    std::vector<Client*>::iterator del;
+    for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
+    {
+        (*it)->sending(RPL_PART(client->getPrefix(), name_));
+        if (*it == client)
+            del = it;
+    }
+    users_.erase(del);
     this->newAdmin();
 }
 
-void    Channel::leave_channel(Client* client)
+void    Channel::kick(Client* client, const std::string& reason)
 {
-    client->sending(RPL_PART(client->getPrefix(), name_));
-    this->sending(client, "leave the channel", "");
+    std::vector<Client*>::iterator del;
     for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
     {
+        (*it)->sending(RPL_KICK(client->getPrefix(), name_, client->getNick(), reason));
         if (*it == client)
-        {
-            users_.erase(it);
-            break ;
-        }
+            del = it;
     }
-    this->newAdmin();
+    users_.erase(del);
 }
 
 void	Channel::sending(Client* client, const std::string& message, const std::string& command)
@@ -68,6 +91,8 @@ void    Channel::newAdmin()
         admin_ = users_[0];
         admin_->sending(RPL_MSG(admin_->getPrefix(), "", name_, "you are the new admin"));
         this->sending(admin_, "is a new admin", "");
+        for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
+            this->replyName(*it);
     }
 }
 
@@ -84,5 +109,6 @@ void    Channel::setKey(const std::string& key)
 void    Channel::whoReply(Client *client)
 {
     for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
-        client->sending(RPL_WHOREPLY( name_, (*it)->getUser(), (*it)->getHost(), (*it)->getNick(), (*it)->getReal()));
+        client->sending(RPL_WHOREPLY(client->getNick(), name_, (*it)->getUser(), (*it)->getHost(), (*it)->getNick(), "H", (*it)->getReal()));
+    client->sending(RPL_ENDOFWHO(client->getNick(), name_));
 }

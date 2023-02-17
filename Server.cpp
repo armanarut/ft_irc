@@ -61,11 +61,16 @@ Channel*    Server::addChannel(const std::string& name, const std::string& pass)
     return newChannel;
 }
 
-void    Server::setUser(const std::string& nickname, int fd)
+void    Server::setUser(Client* client, const std::string& nick, int fd)
 {
-_user.erase(nickname);
-std::cout << "setting NICK: " << nickname << std::endl;
-_user.insert(std::make_pair(nickname, fd));
+    std::string old_nick = client->getNick();
+    if (!(old_nick ==  ""))
+        for (iterator it = _client.begin(); it != _client.end(); ++it)
+            if (it->second != client)
+                it->second->sending(":" + old_nick + " NICK " + nick);
+    _user.erase(old_nick);
+    _user.erase(nick);
+    _user.insert(std::make_pair(nick, fd));
 }
 
 /****************[init server]****************/
@@ -191,15 +196,14 @@ void    Server::new_client()
 
     getnameinfo((struct sockaddr*)&client_address, sizeof(client_address), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV);
     Client* n_client = new Client(new_socket, hostname);
-    n_client->quit = false;
     _client.insert(std::make_pair(new_socket, n_client));
-    std::cout << "New user: " << new_socket - server_fd << std::endl;
-    std::cout << "Users online: " << _client.size() << std::endl;
+    std::cout << "New connection: " << n_client->getPrefix() << std::endl;
+    std::cout << "Users connection: " << _client.size() << std::endl;
 }
 
 void    Server::delete_user(iterator& it){
 
-    std::cout << "Offline user: " << it->first - server_fd << std::endl;
+    std::cout << "User disconnected: " << it->second->getPrefix() << std::endl;
 
     it->second->leaveChannel(0);
 
@@ -208,7 +212,7 @@ void    Server::delete_user(iterator& it){
 
     delete it->second;
     _client.erase(it);
-    std::cout << "Users online: " << _client.size() << std::endl;
+    std::cout << "Users connection: " << _client.size() << std::endl;
 }
 
 // void    Server::checkClientFd()

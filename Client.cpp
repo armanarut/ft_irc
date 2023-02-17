@@ -7,7 +7,7 @@
 		realname(),
 		registered(false),
 		passwd(false),
-		fd_(fd) {}
+		fd_(fd) {quit = false;}
 
 	Client::~Client() {}
 
@@ -39,6 +39,8 @@
 
 	void	Client::setNick(std::string nick)
 	{
+		if (!(nickname == ""))
+        	this->sending(":" + nickname + " NICK " + nick);
 		nickname = nick;
 	}
 
@@ -58,6 +60,7 @@
 		{
 			registered = true;
 			reply(RPL_WELCOME(nickname));
+			std::cout << "Registered: " << this->getPrefix() << std::endl;
 		}
 	}
 
@@ -106,7 +109,6 @@
 		{
 			if (*it == channel)
 			{
-				(*it)->leave_channel(this);
 				_channel.erase(it);
 				break;
 			}
@@ -117,6 +119,6 @@
 	{
         (void)del_all;
 		for (std::vector<Channel*>::iterator it = _channel.begin(); it != _channel.end(); ++it)
-			(*it)->leave_channel(this);
+			(*it)->part(this);
 		_channel.clear();
 	}
