@@ -17,16 +17,31 @@ void    Bot::start_bot() {
     mysock.sin_family = AF_INET; // Установить семейство адресов
     mysock.sin_port = htons(m_port); // Установить порт
     mysock.sin_addr.s_addr = inet_addr(m_host);; // Установить адрес
-    
+    write (1, "Connect .", 9) ;
+    int n = 0; 
+    while (1)
+    {
         if (connect(m_fd, (struct sockaddr*)&mysock, sizeof (mysock)) != -1){
-            std::cout << "Server connected!" << std::endl;
+            std::cout << "Server :" << m_host << ":" << m_port << " status :connected!" << std::endl;
             fcntl(m_fd, F_SETFL, O_NONBLOCK);
             run();
             std::cout << "Bot exit!" << std::endl;
-            // break;
+            break;
         }
         else
-            std::cout << "Not Connected!" << std::endl;    
+        {
+            sleep(1);
+            n++;
+            write (1, ".", 1) ;
+        }
+        if (n == 15)
+        {
+            write (1, "\nNot Connected! Wait 5s.", 25) ;
+            sleep(5);
+            write (1, "\nConnect .",11) ;
+            n = 0;
+        }    
+    } 
 }
     
 void    Bot::run(){
@@ -41,8 +56,6 @@ void    Bot::run(){
     int val = 0;
     while (true)
     {
-        // std::cout << m_fd << std::endl;// cheking
-        n++;
         if(buffer[0])
             memset(buffer, 0, BUF_SIZE);
         val = recv(m_fd, buffer, BUF_SIZE, 0);
@@ -51,27 +64,26 @@ void    Bot::run(){
         in_text="";
         in_text.append(buffer);
         if (!in_text.empty()){
-            // std::cout << in_text << "readCount " << valread << std::endl; // cheking
             if (check_command(in_text))
                 break;  
-        }
-        if (n > 500000000){
-            // sending("PING " + m_nick + " " + m_host);
-            n = 0;
         }
     }
 }
 
 int Bot::check_command(std::string &in_text){
-    std::cout << "Incoming: " << in_text;
+    std::cout << "Incoming: " << in_text; //cheking
     std::string msg;
     std::string command = parsing_text(in_text, &msg);
-    std::cout << "command-|" << command << "|   msg-|" << msg << "|" << std::endl;//cheking
+    // std::cout << "command-|" << command << "|   msg-|" << msg << "|" << std::endl;//cheking
 
     if (m_user.empty() || command.empty())
-        return 0;//std::cout << "User not identifit" << std::endl;
+        return 0;
     else if (check_book(command, &msg))
         ;
+    else if (command == "SAVE")
+        createBook();
+    else if (command == "EXIT")
+        return (0);
     else if (command == "TIME")
         msg = get_time();
     else if (command == "HELLO")
@@ -83,14 +95,13 @@ int Bot::check_command(std::string &in_text){
     else
         msg = " Anhaskanali hramana (xntrum em chisht grek)!";
    
-    std::cout << ("PRIVMSG " + m_user + msg) << std::endl; // cheking
+    // std::cout << ("PRIVMSG " + m_user + msg) << std::endl; // cheking
     if (!msg.empty())
         sending("PRIVMSG " + m_user + msg);
     return 0;
 }
 
 bool    Bot::check_book(std::string &in_text, std::string *msg){
-    //Incoming: -> :ed!SH@localhost PRIVMSG gor :hello :sdf
     std::map <std::string, std::string>::iterator it;
 
     it = m_book.find(in_text);
