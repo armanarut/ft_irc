@@ -29,7 +29,7 @@ void    CommandNICK::execute(Client *client, std::vector<std::string> arguments)
         return ;
     }
     std::string nickname = arguments[0];
-    if (!is_all_alpha(nickname))
+    if (!is_valid(nickname))
     {
         client->reply(ERR_ERRONEUSNICKNAME(client->getNick(), nickname));
         return ;
@@ -40,7 +40,7 @@ void    CommandNICK::execute(Client *client, std::vector<std::string> arguments)
         client->reply(ERR_NICKNAMEINUSE(client->getNick(), nickname));
         return ;
     }
-    _server->setUser(nickname, client->getFd());
+    _server->setUser(client, nickname, client->getFd());
     client->setNick(nickname);
     if (!client->isRegistered())
         client->registering();
@@ -226,6 +226,7 @@ void    CommandPART::execute(Client *client, std::vector<std::string> arguments)
         client->reply(ERR_NOTONCHANNEL(client->getNick(), channel_name));
         return ;
     }
+    channel->part(client);
     client->leaveChannel(channel);
 }
 
@@ -269,7 +270,7 @@ void    CommandKICK::execute(Client *client, std::vector<std::string> arguments)
         for (size_t i = 3; i < arguments.size(); ++i)
             reason.append(" " + arguments[i]);
     }
-    user->sending(RPL_KICK(client->getPrefix(), channel_name, user_name, reason));
+    channel->kick(user, reason);
     user->leaveChannel(channel);
 }
 
@@ -306,21 +307,18 @@ void    CommandMODE::execute(Client *client, std::vector<std::string> arguments)
         client->reply(ERR_NOTONCHANNEL(client->getNick(), channel_name));
         return ;
     }
-    // if (!(channel->isAdmin(client)))
-    // {
-    //     client->reply(ERR_CHANOPRIVSNEEDED(client->getNick(), channel_name));
-    //     return ;
-    // }
     if (arguments.size() == 1)
     {
-        client->sending(RPL_MODE(client->getPrefix(), "+k"));
+        client->sending(RPL_MODE(client->getPrefix(), channel_name, "+k"));
         return ;
     }
     std::string mode = arguments[1];
     if (arguments.size() > 2)
     {
         std::string key = arguments[2];
-        if (mode == "+k")
+        if (!(channel->isAdmin(client)))
+            client->reply(ERR_CHANOPRIVSNEEDED(client->getNick(), channel_name));
+        else if (mode == "+k")
             channel->setKey(key);
         else if (mode == "-k" && channel->getKey() != key)
             channel->setKey("");
@@ -334,23 +332,30 @@ void    CommandWHO::execute(Client *client, std::vector<std::string> arguments)
         client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "WHO"));
         return ;
     }
-    std::string channel_name = arguments[0];
+    std::string target = arguments[0];
 
-    Channel* channel = _server->getChannel(channel_name);
-    if (!channel)
+    if (target[0] == '#' || target[0] == '&')
     {
-        client->reply(ERR_NOSUCHCHANNEL(client->getNick(), channel_name));
+        Channel* channel = _server->getChannel(target);
+        if (!channel)
+        {
+            client->reply(ERR_NOSUCHNICK(client->getNick(), target));
+            return ;
+        }
+        else if (!channel->isAvelabel(client))
+        {
+            client->reply(ERR_NOTONCHANNEL(client->getNick(), target));
+            return ;
+        }
+        channel->whoReply(client);
         return ;
     }
-    else if (!channel->isAvelabel(client))
+    Client* user = _server->getClient(target);
+    if (!user)
     {
-        client->reply(ERR_NOTONCHANNEL(client->getNick(), channel_name));
+        client->reply(ERR_NOSUCHNICK(client->getNick(), target));
         return ;
     }
-    // if (!(channel->isAdmin(client)))
-    // {
-    //     client->reply(ERR_CHANOPRIVSNEEDED(client->getNick(), channel_name));
-    //     return ;
-    // }
-    channel->whoReply(client);
+    client->sending(RPL_WHOREPLY(client->getNick(), "*", user->getUser(), user->getHost(), user->getNick(), "H", user->getReal()));
+    client->sending(RPL_ENDOFWHO(client->getNick(), target));
 }

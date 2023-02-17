@@ -35,7 +35,7 @@
             line = client->buffer.substr(0, client->buffer.find("\n"));
             client->buffer.erase(0, line.size() + 1);
         }
-        std::cout << "Incoming command: " << line << std::endl;
+        // std::cout << "Incoming command: " << line << std::endl;
 
         std::string name;
         // if (line.rfind(" ") == std::string::npos)

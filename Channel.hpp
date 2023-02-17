@@ -14,7 +14,8 @@ public:
     ~Channel();
 
     void    join(Client* client);
-    void    leave_channel(Client* client);
+    void    part(Client* client);
+    void    kick(Client* client, const std::string& reason);
 	void	sending(Client* client, const std::string& msg, const std::string& command);
     bool    isAvelabel(Client* client);
     bool    isAdmin(Client* client);
@@ -22,6 +23,7 @@ public:
     std::string    getKey();
     void    setKey(const std::string& key);
     void    whoReply(Client *client);
+    void    replyName(Client* client);
 
 private:
     std::string             name_;

@@ -2,7 +2,10 @@
 
 // Numeric replies 
 #define RPL_WELCOME(source)                     "001 " + source + " :Welcome to the ft_irc Network"
-#define RPL_WHOREPLY(ch, us, hst, nick, re)     "352 " + ch + " " + us + " " + hst + " ft_irc " + nick + " H :1 " + re
+#define RPL_WHOREPLY(name, ch, us, hst, nick, fl, re)"352 " + name + " " + ch + " " + us + " " + hst + " ft_irc " + nick + " " + fl + " :1 " + re
+#define RPL_ENDOFWHO(name, source)              "315 " + name + " " + source + " :End of WHO list"
+#define RPL_NAMREPLY(name, ch, prefix, nick)    "353 " + name + " = " + ch + " :" + prefix + nick
+#define RPL_ENDOFNAMES(name, ch)                "366 " + name +  " " + ch + " :End of /NAMES list"
 
 // Error replies 
 #define ERR_NOSUCHNICK(source, command)         "401 " + source + " " + command + " :No such nick/channel"
@@ -30,7 +33,7 @@
 #define RPL_QUIT(prefix, massage)                   ":" + prefix + " QUIT :Quit: " + massage
 #define RPL_JOIN(prefix, target)                    ":" + prefix + " JOIN " + target
 #define RPL_PART(prefix, target)                    ":" + prefix + " PART " + target
-#define RPL_MODE(prefix, target)                    ":" + prefix + " MODE " + target
+#define RPL_MODE(prefix, channel, target)           ":" + prefix + " MODE " + channel + " " + target
 
 #define SINTAX_ERROR   " :Sintax error"
 
@@ -38,5 +41,5 @@
 
 /****************[utils]****************/
 void	prog_error(std::string err);
-bool	is_all_alpha(std::string str);
+bool	is_valid(std::string str);
 bool	is_all_digit(std::string str);
