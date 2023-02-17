@@ -159,6 +159,11 @@ int main(int ac,char **av)
         std::cout << " /host/ /port/ /password/ /nick/" << std::endl;
         return 0;
     }
+    if (!is_all_digit(argv[2]))
+        prog_error("Port must to by digital, and in range [1 to 65535]");
+    int port = std::atoi(argv[2]);
+    if ( port < 1 || port > 65535)
+        prog_error("Port must to by digital, and in range [1 to 65535]");
     Bot bot(av);
     bot.start_bot();
     return 0;
