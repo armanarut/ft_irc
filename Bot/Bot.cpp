@@ -50,7 +50,6 @@ void    Bot::run(){
     sending("PASS " + m_pass);
     sending("USER BOT" + m_nick + " " + my_to_string(m_port) + " " + m_host + " :Noname");
 
-    int n = 0;
     std::string in_text;
     char buffer[BUF_SIZE];
     int val = 0;
