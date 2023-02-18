@@ -45,6 +45,6 @@ fclean: clean
 re: fclean all
 
 start: all
-	./$(NAME) 228.0.0.1 12 123 gor
+	./$(NAME) 127.0.0.1 6667 123 gor
 
 .PHONY:		all clean fclean re run start
