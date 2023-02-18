@@ -28,6 +28,11 @@ void    CommandNICK::execute(Client *client, std::vector<std::string> arguments)
         client->reply(ERR_NONICKNAMEGIVEN(client->getNick()));
         return ;
     }
+    if (!client->hasPasswd())
+    {
+        client->reply(ERR_ALREADYREGISTERED(client->getNick()));
+        return ;
+    }
     std::string nickname = arguments[0];
     if (!is_valid(nickname))
     {
@@ -48,7 +53,7 @@ void    CommandNICK::execute(Client *client, std::vector<std::string> arguments)
 
 void    CommandUSER::execute(Client *client, std::vector<std::string> arguments)
 {
-    if (client->isRegistered())
+    if (client->isRegistered() || !client->hasPasswd())
     {
         client->reply(ERR_ALREADYREGISTERED(client->getNick()));
         return ;
@@ -342,7 +347,7 @@ void    CommandWHO::execute(Client *client, std::vector<std::string> arguments)
             client->reply(ERR_NOSUCHNICK(client->getNick(), target));
             return ;
         }
-        else if (!channel->isAvelabel(client))
+        if (!channel->isAvelabel(client))
         {
             client->reply(ERR_NOTONCHANNEL(client->getNick(), target));
             return ;
@@ -358,4 +363,41 @@ void    CommandWHO::execute(Client *client, std::vector<std::string> arguments)
     }
     client->sending(RPL_WHOREPLY(client->getNick(), "*", user->getUser(), user->getHost(), user->getNick(), "H", user->getReal()));
     client->sending(RPL_ENDOFWHO(client->getNick(), target));
+}
+
+void    CommandINVITE::execute(Client *client, std::vector<std::string> arguments)
+{
+    if (arguments.empty() || arguments.size() < 2)
+    {
+        client->reply(ERR_NEEDMOREPARAMS(client->getNick(), "WHO"));
+        return ;
+    }
+    std::string user_name = arguments[0];
+    Client* user = _server->getClient(user_name);
+    if (!user)
+    {
+        client->reply(ERR_NOSUCHNICK(client->getNick(), user_name));
+        return ;
+    }
+    std::string channel_name = arguments[1];
+    Channel* channel = _server->getChannel(channel_name);
+    if (!channel)
+    {
+        client->reply(ERR_NOSUCHNICK(client->getNick(), channel_name));
+        return ;
+    }
+    if (!channel->isAvelabel(client))
+    {
+        client->reply(ERR_NOTONCHANNEL(client->getNick(), channel_name));
+        return ;
+    }
+    if (channel->isAvelabel(user))
+    {
+        client->reply(ERR_USERONCHANNEL(client->getNick(), user_name, channel_name));
+        return ;
+    }
+    user->sending(RPL_INVITE(client->getPrefix(), user_name, channel_name));
+    client->reply(RPL_INVITING(client->getNick(), user_name, channel_name));
+
+
 }

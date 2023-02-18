@@ -4,6 +4,7 @@
 #define RPL_WELCOME(source)                     "001 " + source + " :Welcome to the ft_irc Network"
 #define RPL_WHOREPLY(name, ch, us, hst, nick, fl, re)"352 " + name + " " + ch + " " + us + " " + hst + " ft_irc " + nick + " " + fl + " :1 " + re
 #define RPL_ENDOFWHO(name, source)              "315 " + name + " " + source + " :End of WHO list"
+#define RPL_INVITING(name, nick, ch)            "341 " + name + " " + nick + " " + ch
 #define RPL_NAMREPLY(name, ch, prefix, nick)    "353 " + name + " = " + ch + " :" + prefix + nick
 #define RPL_ENDOFNAMES(name, ch)                "366 " + name +  " " + ch + " :End of /NAMES list"
 
@@ -19,6 +20,7 @@
 #define ERR_NICKNAMEINUSE(source, command)      "433 " + source + " " + command + " :Nickname is already in use"
 #define ERR_USERNOTINCHANNEL(src, com1, com2)   "441 " + src + " " + com1 + " " + com2 + " :They aren't on that channel"
 #define ERR_NOTONCHANNEL(source, command)       "442 " + source + " " + command + " :You're not on that channel"
+#define ERR_USERONCHANNEL(src, com1, com2)      "443 " + src + " " + com1 + " " + com2 + " :is already on channel"
 #define ERR_NOTREGISTERED(source)               "451 " + source + " :You have not registered"
 #define ERR_NEEDMOREPARAMS(source, command)     "461 " + source + " " + command + " :Not enough parameters"
 #define ERR_ALREADYREGISTERED(source)           "462 " + source + " :You may not reregister"
@@ -34,6 +36,7 @@
 #define RPL_JOIN(prefix, target)                    ":" + prefix + " JOIN " + target
 #define RPL_PART(prefix, target)                    ":" + prefix + " PART " + target
 #define RPL_MODE(prefix, channel, target)           ":" + prefix + " MODE " + channel + " " + target
+#define RPL_INVITE(prefix, target, channel)         ":" + prefix + " INVITE " + target + " " + channel
 
 #define SINTAX_ERROR   " :Sintax error"
 
