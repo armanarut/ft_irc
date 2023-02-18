@@ -17,6 +17,10 @@ Server::~Server()
         close(it->first);
     }
     close(server_fd);
+    for (std::map<std::string, Channel*>::iterator it = _channel.begin(); it != _channel.end(); ++it)
+    {
+        delete it->second;
+    }
 }
 
 short   Server::getPort() const
@@ -121,23 +125,18 @@ void    Server::start()
         }
 
         r = select(nfds + 1, &rd, &wr, &er, &tv);
-        // if (r == -1 && errno == EINTR)
-        //     break;//continue;
         if (r == -1)
             prog_error("select");
         else if (r)
         {
-            // cout << "continue..." << endl;
             for (iterator it = _client.begin(); it != _client.end(); ++it)
             {
                 /*************[writing]*************/
-                if (FD_ISSET(it->first, &wr)) ///<---------------------------------
+                if (FD_ISSET(it->first, &wr))
                 {
-                    // cout << "writing..." << endl;
                     FD_CLR(it->first, &wr);
                     while (!(it->second->buffer).empty())
                         _commandHandler->invoke(it->second);
-
                     it->second->buffer.clear();
                     if ( it->second->quit) {
                         delete_user(it);
@@ -147,7 +146,6 @@ void    Server::start()
                 /*************[reading]*************/
                 else if (FD_ISSET(it->first, &rd))
                 {
-                    // std::cout << "client quit " << it->second->quit << std::endl;
                     FD_CLR(it->first, &rd);
                     if (!get_buffer(it))
                         break ;
@@ -156,10 +154,7 @@ void    Server::start()
             }
         }
         else
-        {
-            // cout << "no data..." << endl;
             new_client();
-        }
     }
 }
 
@@ -171,7 +166,7 @@ bool    Server::get_buffer(iterator& it)
     while ((memset(buffer, 0, BUF_SIZE), \
             valread = recv(it->first, buffer, BUF_SIZE, 0)) != -1)
     {
-        if (valread == 0) ////////<----------------------------------
+        if (valread == 0)
         {
             delete_user(it);
             return valread;
@@ -214,16 +209,3 @@ void    Server::delete_user(iterator& it){
     _client.erase(it);
     std::cout << "Users connection: " << _client.size() << std::endl;
 }
-
-// void    Server::checkClientFd()
-// {
-//      for (std::map<int, Client*>::iterator it = _client.begin(); it != _client.end(); ++it)
-//     {
-//         if (it->second->quit)
-//         {
-//             close (it->first);
-//             delete_user(it->second);
-//             it = _client.begin();
-//         }
-//     }
-// }

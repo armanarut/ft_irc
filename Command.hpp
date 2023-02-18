@@ -11,7 +11,7 @@ class Command
 {
 protected:
 	Server* _server;
-	bool _authRequired;
+	bool    _authRequired;
 
 public:
     Command(Server* server, bool authRequired = true)
@@ -20,7 +20,7 @@ public:
 
     virtual ~Command(){};
 
-    bool authRequired() const { return _authRequired; };
+    bool    authRequired() const { return _authRequired; };
 
 	virtual void execute(Client *client, std::vector<std::string> arguments) = 0;
 };

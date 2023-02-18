@@ -70,10 +70,8 @@ void    Bot::run(){
 }
 
 int Bot::check_command(std::string &in_text){
-    std::cout << "Incoming: " << in_text; //cheking
     std::string msg;
     std::string command = parsing_text(in_text, &msg);
-    // std::cout << "command-|" << command << "|   msg-|" << msg << "|" << std::endl;//cheking
 
     if (m_user.empty() || command.empty())
         return 0;
@@ -93,8 +91,6 @@ int Bot::check_command(std::string &in_text){
         command_LEARN(&msg);
     else
         msg = " Anhaskanali hramana (xntrum em chisht grek)!";
-   
-    // std::cout << ("PRIVMSG " + m_user + msg) << std::endl; // cheking
     if (!msg.empty())
         sending("PRIVMSG " + m_user + msg);
     return 0;

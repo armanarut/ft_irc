@@ -13,13 +13,6 @@ class Server;
 #include "Channel.hpp"
 #include "CommandHandler.hpp"
 
-// #include <iostream>
-// #include <string>
-// #include <cerrno>
-// #include <cstring>
-// #include <sstream>
-// #include <sys/socket.h>
-
 class Server
 {
 public:
@@ -31,9 +24,10 @@ public:
     ~Server();
 
     std::string getPass();
-    Client* getClient(const std::string& nickname);
-    Channel* getChannel(const std::string& name);
-    Channel* addChannel(const std::string& name, const std::string& pass);
+    Client*     getClient(const std::string& nickname);
+    Channel*    getChannel(const std::string& name);
+    Channel*    addChannel(const std::string& name, const std::string& pass);
+
     void    setUser(Client* client, const std::string& nick, int fd);
     void    delete_user(iterator& it);
     void    checkClientFd();
@@ -51,17 +45,12 @@ private:
 	std::map<std::string, Channel*>	_channel;
 	CommandHandler*	                _commandHandler;
 
-/****************[init server]****************/
     void    init_server();
 
-/****************[make select]****************/
     void    start();
     bool    get_buffer(iterator& it);
 
-/****************[create new client]****************/
     void    new_client();
-
-    
 
     Server();
     Server& operator=(const Server& other);
