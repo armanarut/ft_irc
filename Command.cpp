@@ -188,22 +188,27 @@ void    CommandJOIN::execute(Client *client, std::vector<std::string> arguments)
         client->leaveChannel(0);
         return ;
     }
-    std::string channel_name = arguments[0];
-    std::string password = arguments.size() > 1 ? arguments[1] : "";
-    if (channel_name[0] != '#' && channel_name[0] != '&')
-    {
-        client->reply(ERR_BADCHANMASK(client->getNick(), channel_name));
-        return ;
+    std::string channel_name;
+    std::string password;
+    std::map<std::string, std::string> ch = strTransMap(arguments[0], arguments[1]);
+    for (std::map<std::string, std::string>::iterator it = ch.begin(); it != ch.end(); ++it) {
+        channel_name = it->first;
+        password = it->second;
+        if (channel_name[0] != '#' && channel_name[0] != '&')
+        {
+            client->reply(ERR_BADCHANMASK(client->getNick(), channel_name));
+            return ;
+        }
+        Channel* channel = _server->getChannel(channel_name);
+        if (!channel)
+            channel = _server->addChannel(channel_name, password);
+        if (channel->getKey() != password)
+        {
+            client->reply(ERR_BADCHANNELKEY(client->getNick(), channel_name));
+            return ;
+        }
+        client->joinChannel(channel);
     }
-    Channel* channel = _server->getChannel(channel_name);
-    if (!channel)
-        channel = _server->addChannel(channel_name, password);
-    if (channel->getKey() != password)
-    {
-        client->reply(ERR_BADCHANNELKEY(client->getNick(), channel_name));
-        return ;
-    }
-    client->joinChannel(channel);
 }
 
 void    CommandPART::execute(Client *client, std::vector<std::string> arguments)

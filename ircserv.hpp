@@ -40,3 +40,4 @@
 void	prog_error(std::string err);
 bool	is_all_alpha(std::string str);
 bool	is_all_digit(std::string str);
+std::map<std::string, std::string> strTransMap(std::string &channel, std::string &passw);
