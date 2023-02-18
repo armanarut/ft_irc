@@ -15,6 +15,7 @@
     _commands["KICK"] = new CommandKICK(_server);
     _commands["MODE"] = new CommandMODE(_server);
     _commands["WHO"] = new CommandWHO(_server);
+    _commands["INVITE"] = new CommandINVITE(_server);
 
     _commands["PRIVMSG"] = new CommandPRIVMSG(_server);
     _commands["NOTICE"] = new CommandNOTICE(_server);
@@ -35,17 +36,9 @@
             line = client->buffer.substr(0, client->buffer.find("\n"));
             client->buffer.erase(0, line.size() + 1);
         }
-        // std::cout << "Incoming command: " << line << std::endl;
+        std::cout << "Incoming command: " << line << std::endl;
 
-        std::string name;
-        // if (line.rfind(" ") == std::string::npos)
-        //     command = line;
-        // else
-            name = line.substr(0, line.find(" "));
-
-        // if (line.size() == name.size())
-        //     line.clear();
-        // else
+        std::string name = line.substr(0, line.find(" "));
 
 		try
 		{
@@ -70,103 +63,7 @@
 		{
 			client->reply(ERR_UNKNOWNCOMMAND(client->getNick(), name));
 		}
-        
-        // _operators(name, it, line);
-
-        // if (!word.empty())
-        // {
-        //     if (word == "CAP")
-        //         ;// operator_CAP(it, line.substr(word.size() + 1, line.size()));
-        //     else if (word == "PING")
-        //         ;// operator_PING(it, line.substr(word.size() + 1, line.size()));
-        //     else if (word == "PONG")
-        //         ;// operator_PONG(it, line.substr(word.size() + 1, line.size()));
-        //     else if (word == "PASS")
-        //     {
-        //         if (CHECK_PARAM(line, word))
-        //         {
-        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        //         }
-        //         else
-        //             operator_PASS(it, line.substr(word.size() + 1, line.size()));
-        //     }
-        //     else if (word == "USER")
-        //     {
-        //         if (CHECK_PARAM(line, word))
-        //         {
-        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        //         }
-        //         else
-        //         operator_USER(it, line.substr(word.size() + 1, line.size()));
-        //     }
-        //     else if (word == "NICK")
-        //     {
-        //         if (CHECK_PARAM(line, word))
-        //         {
-        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        //         }
-        //         else
-        //         operator_NICK(it, line.substr(word.size() + 1, line.size()));
-        //     }
-        //     else if (!it->second.isRegistered())
-        //     {
-        //         SEND_MSG(it->first, NOT_REGISTERED);
-        //     }
-        //     else if (word == "NOTICE")
-        //     {
-        //         if (CHECK_PARAM(line, word))
-        //         {
-        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        //         }
-        //         else
-        //         operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()), "NOTICE");
-        //     }
-        //     else if (word == "PRIVMSG")
-        //     {
-        //         if (CHECK_PARAM(line, word))
-        //         {
-        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        //         }
-        //         else
-        //         operator_PRIVMSG(it, line.substr(word.size() + 1, line.size()), "PRIVMSG");
-        //     }
-        //     else if (word == "JOIN")
-        //     {
-        //         if (CHECK_PARAM(line, word))
-        //         {
-        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        //         }
-        //         else
-        //         operator_JOIN(it, line.substr(word.size() + 1, line.size()));
-        //     }
-        //     else if (word == "PART")
-        //     {
-        //         if (CHECK_PARAM(line, word))
-        //         {
-        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        //         }
-        //         else
-        //         operator_PART(it, line.substr(word.size() + 1, line.size()));
-        //     }
-		// 	else if (word == "KICK")
-        //     {
-        //         if (CHECK_PARAM(line, word))
-        //         {
-        //             SEND_MSG(it->first, ERR_NEEDMOREPARAMS);
-        //         }
-        //         else
-		// 		operator_KICK(it, line.substr(word.size() + 1, line.size()));
-        //     }
-        //     else if (word == "LUSERS")
-        //         operator_LUSERS(it);
-        //     else
-        //     {
-        //         std::cout  << line << ERR_UNKNOWNCOMMAND << std::endl;
-        //         SEND_ERR(it->first, word, ERR_UNKNOWNCOMMAND);
-        //     }
-        // }
 
         if (client->buffer.size())
             invoke(client);
-        // std::cout << "check user deleted.\n"; // check
     }

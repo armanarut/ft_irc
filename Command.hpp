@@ -150,3 +150,12 @@ public:
 
     void    execute(Client *client, std::vector<std::string> arguments);
 };
+
+class CommandINVITE: public Command
+{
+public:
+    CommandINVITE(Server* server, bool authRequired = true):Command(server, authRequired){}
+    ~CommandINVITE(){}
+
+    void    execute(Client *client, std::vector<std::string> arguments);
+};
