@@ -4,6 +4,8 @@ ARRAY:Static contiguous array (class template)
 BAREV:Barev!
 DEQUE:Double-ended queue (class template)
 FORWARD_LIST:Singly-linked list (class template)
+HAJOX:minch handipum!
+INCH KA CHKA?:ban el chka du asa?
 INCHES ANUM?:chat em anum.
 LIST:Doubly-linked list (class template)
 MAP:Collection of key-value pairs, sorted by keys, keys are unique (class template).

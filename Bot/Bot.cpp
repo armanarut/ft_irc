@@ -22,7 +22,7 @@ void    Bot::start_bot() {
     while (1)
     {
         if (connect(m_fd, (struct sockaddr*)&mysock, sizeof (mysock)) != -1){
-            std::cout << "Server :" << m_host << ":" << m_port << " status :connected!" << std::endl;
+            std::cout << "\nServer :" << m_host << ":" << m_port << " status :connected!" << std::endl;
             fcntl(m_fd, F_SETFL, O_NONBLOCK);
             run();
             std::cout << "Bot exit!" << std::endl;
