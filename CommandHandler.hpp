@@ -12,7 +12,7 @@ class CommandHandler
 {
 private:
     Server* _server;
-    std::map<std::string, Command*>    _commands;
+    std::map<std::string, Command*> _commands;
 
 public:
     CommandHandler(Server* server);

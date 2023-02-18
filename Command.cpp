@@ -195,20 +195,27 @@ void    CommandJOIN::execute(Client *client, std::vector<std::string> arguments)
     }
     std::string channel_name = arguments[0];
     std::string password = arguments.size() > 1 ? arguments[1] : "";
-    if (channel_name[0] != '#' && channel_name[0] != '&')
-    {
-        client->reply(ERR_BADCHANMASK(client->getNick(), channel_name));
-        return ;
+    std::map<std::string, std::string> ch = strTransMap(channel_name, password);
+    for (std::map<std::string, std::string>::iterator it = ch.begin(); it != ch.end(); ++it) {
+        channel_name = it->first;
+        password = it->second;
+        if (channel_name[0] != '#' && channel_name[0] != '&')
+        {
+            client->reply(ERR_BADCHANMASK(client->getNick(), channel_name));
+            return ;
+        }
+        Channel* channel = _server->getChannel(channel_name);
+        if (!channel)
+            channel = _server->addChannel(channel_name, password);
+        else if (channel->usersSize() == 0)
+            channel->setKey(password);
+        if (channel->getKey() != "" && channel->getKey() != password)
+        {
+            client->reply(ERR_BADCHANNELKEY(client->getNick(), channel_name));
+            return ;
+        }
+        client->joinChannel(channel);
     }
-    Channel* channel = _server->getChannel(channel_name);
-    if (!channel)
-        channel = _server->addChannel(channel_name, password);
-    if (channel->getKey() != password)
-    {
-        client->reply(ERR_BADCHANNELKEY(client->getNick(), channel_name));
-        return ;
-    }
-    client->joinChannel(channel);
 }
 
 void    CommandPART::execute(Client *client, std::vector<std::string> arguments)
@@ -314,7 +321,8 @@ void    CommandMODE::execute(Client *client, std::vector<std::string> arguments)
     }
     if (arguments.size() == 1)
     {
-        client->sending(RPL_MODE(client->getPrefix(), channel_name, "+k"));
+        if (!(channel->getKey() == ""))
+            client->sending(RPL_MODE(client->getPrefix(), channel_name, "+k " + channel->getKey()));
         return ;
     }
     std::string mode = arguments[1];
@@ -324,9 +332,15 @@ void    CommandMODE::execute(Client *client, std::vector<std::string> arguments)
         if (!(channel->isAdmin(client)))
             client->reply(ERR_CHANOPRIVSNEEDED(client->getNick(), channel_name));
         else if (mode == "+k")
+        {
+            client->sending(RPL_MODE(client->getPrefix(), channel_name, "+k " + key));
             channel->setKey(key);
-        else if (mode == "-k" && channel->getKey() != key)
+        }
+        else if (mode == "-k" && channel->getKey() == key)
+        {
+            client->sending(RPL_MODE(client->getPrefix(), channel_name, "-k "));
             channel->setKey("");
+        }
     }
 }
 

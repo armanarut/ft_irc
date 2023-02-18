@@ -20,10 +20,13 @@ public:
 	~Client();
 
 	void	init(const std::string& user, const std::string& real);
+
 	std::string getNick();
 	std::string getUser();
 	std::string getHost();
 	std::string getReal();
+	std::string	getPrefix();
+
 	void	setNick(std::string nick);
 	void	setUser(std::string user);
 	int		getFd();
@@ -31,9 +34,8 @@ public:
 	void	unlockPasswd();
 	bool	isRegistered();
 	bool	hasPasswd();
-	std::string	getPrefix();
 	void	sending(const std::string& massage);
-	void reply(const std::string& reply);
+	void	reply(const std::string& reply);
 	void	joinChannel(Channel* channel);
 	void	leaveChannel(Channel* channel);
 	void	leaveChannel(int del_all);

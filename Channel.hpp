@@ -24,6 +24,7 @@ public:
     void    setKey(const std::string& key);
     void    whoReply(Client *client);
     void    replyName(Client* client);
+    int     usersSize();
 
 private:
     std::string             name_;

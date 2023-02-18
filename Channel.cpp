@@ -47,7 +47,7 @@ void    Channel::kick(Client* client, const std::string& reason)
     std::vector<Client*>::iterator del;
     for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
     {
-        (*it)->sending(RPL_KICK(client->getPrefix(), name_, client->getNick(), reason));
+        (*it)->sending(RPL_KICK(admin_->getPrefix(), name_, client->getNick(), reason));
         if (*it == client)
             del = it;
     }
@@ -111,4 +111,9 @@ void    Channel::whoReply(Client *client)
     for(std::vector<Client*>::iterator it = users_.begin(); it != users_.end(); ++it)
         client->sending(RPL_WHOREPLY(client->getNick(), name_, (*it)->getUser(), (*it)->getHost(), (*it)->getNick(), "H", (*it)->getReal()));
     client->sending(RPL_ENDOFWHO(client->getNick(), name_));
+}
+
+int Channel::usersSize()
+{
+    return users_.size();
 }

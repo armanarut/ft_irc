@@ -2,9 +2,9 @@
 
 // Numeric replies 
 #define RPL_WELCOME(source)                     "001 " + source + " :Welcome to the ft_irc Network"
-#define RPL_WHOREPLY(name, ch, us, hst, nick, fl, re)"352 " + name + " " + ch + " " + us + " " + hst + " ft_irc " + nick + " " + fl + " :1 " + re
 #define RPL_ENDOFWHO(name, source)              "315 " + name + " " + source + " :End of WHO list"
 #define RPL_INVITING(name, nick, ch)            "341 " + name + " " + nick + " " + ch
+#define RPL_WHOREPLY(name, ch, us, hst, nick, fl, re)"352 " + name + " " + ch + " " + us + " " + hst + " ft_irc " + nick + " " + fl + " :1 " + re
 #define RPL_NAMREPLY(name, ch, prefix, nick)    "353 " + name + " = " + ch + " :" + prefix + nick
 #define RPL_ENDOFNAMES(name, ch)                "366 " + name +  " " + ch + " :End of /NAMES list"
 
@@ -42,7 +42,10 @@
 
 #define BUF_SIZE 1024
 
+#include <map>
+
 /****************[utils]****************/
 void	prog_error(std::string err);
 bool	is_valid(std::string str);
 bool	is_all_digit(std::string str);
+std::map<std::string, std::string> strTransMap(std::string &channel, std::string &passw);
