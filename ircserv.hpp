@@ -36,6 +36,9 @@
 
 #define BUF_SIZE 1024
 
+#include <vector>
+#include <map>
+
 /****************[utils]****************/
 void	prog_error(std::string err);
 bool	is_all_alpha(std::string str);
