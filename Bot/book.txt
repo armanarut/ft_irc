@@ -1,3 +1,4 @@
+:
 42:TUMO-yi klor shenqna.
 42 MIN:That is how long it will take if you fall into an airless hole that runs through the entire Earth to find yourself on the other side.
 ARRAY:Static contiguous array (class template)
@@ -10,6 +11,7 @@ MAP:Collection of key-value pairs, sorted by keys, keys are unique (class templa
 MULTIMAP:Collection of key-value pairs, sorted by keys (class template)
 MULTISET:Collection of keys, sorted by keys (class template)
 SET:Collection of unique keys, sorted by keys (class template)
+SOVAC EM:es el em sovac
 VECTOR:Dynamic contiguous array (class template)
 WONCES:Lav em' ba du?
 YEREVAN:Capital of Armenia!

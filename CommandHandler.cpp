@@ -21,7 +21,12 @@
     _commands["NOTICE"] = new CommandNOTICE(_server);
     }
 
-    CommandHandler::~CommandHandler(){}
+    CommandHandler::~CommandHandler(){
+        for (std::map<std::string, Command*>::iterator i = _commands.begin(); i != _commands.end(); ++i)
+        {
+           delete i->second;
+        }
+    }
 
     void    CommandHandler::invoke(Client* client)
     {
